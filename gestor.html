@@ -73,7 +73,7 @@
 
             <section id="balance-section" class="mb-4 p-5 bg-white rounded-2xl shadow-md text-center">
                 <h2 class="text-lg font-semibold text-gray-700 mb-2">Balanço Geral</h2>
-                <p id="balance-text" class="text-xl font-bold text-gray-800">Tudo certo por aqui!</p>
+                <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
             </section>
 
             <!-- Seção Post-it -->
@@ -183,11 +183,34 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // ===================================================================================
+        // COLE SUAS CONFIGURAÇÕES DO FIREBASE AQUI
+        // Encontre isso no seu console do Firebase:
+        // Configurações do Projeto > Geral > Seus apps > App Web > Configuração
+        // ===================================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOfFUWw45l8f9_25tFfE14zpbk3k-tFX8",
+            authDomain: "gestaodegastosjg.firebaseapp.com",
+            projectId: "gestaodegastosjg",
+            storageBucket: "gestaodegastosjg.appspot.com",
+            messagingSenderId: "404141341166",
+            appId: "1:404141341166:web:2a47d484f7ea01802376ff"
+        };
+        // ===================================================================================
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const appStateRef = doc(db, "gestaoDaCasa", "estadoCompartilhado");
+
         document.addEventListener('DOMContentLoaded', () => {
-            // --- ESTADO DA APLICAÇÃO ---
-            let transactions = [], taskHistory = [], fixedBillEvents = [], neededTasks = [], shoppingList = [];
-            let totalPaidBy = { 'João': 0, 'Gui': 0 }, taskScores = { 'João': 0, 'Gui': 0 };
+            // --- ESTADO DA APLICAÇÃO (será preenchido pelo Firebase) ---
+            let appState = {};
             let currentCategory = '';
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const billColors = { 'Moradia': 'bg-sky-400', 'Internet': 'bg-violet-400', 'Luz': 'bg-amber-400', 'Água': 'bg-cyan-400' };
@@ -253,6 +276,11 @@
 
             // --- FUNÇÕES DE UI ---
             const updateBalanceUI = () => {
+                const totalPaidBy = appState.transactions.reduce((acc, tx) => {
+                    acc[tx.payer] = (acc[tx.payer] || 0) + tx.valueToSplit;
+                    return acc;
+                }, { 'João': 0, 'Gui': 0 });
+
                 const difference = totalPaidBy['João'] - totalPaidBy['Gui'];
                 let balanceAmount = 0;
                 if (difference > 0.001) {
@@ -269,11 +297,11 @@
             const updateHistoryUI = () => {
                 const historyList = document.getElementById('history-list');
                 historyList.innerHTML = '';
-                if (transactions.length === 0) {
+                if (!appState.transactions || appState.transactions.length === 0) {
                     historyList.innerHTML = `<p class="text-center text-gray-500 py-4">Nenhum gasto registrado ainda.</p>`;
                     return;
                 }
-                transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
+                [...appState.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
                     const debtor = tx.payer === 'João' ? 'Gui' : 'João';
                     const amountPerPerson = tx.valueToSplit / 2;
                     const formattedDate = new Date(tx.date + 'T00:00:00').toLocaleDateString('pt-BR');
@@ -295,19 +323,19 @@
                 });
             };
             const updateTaskUI = () => {
-                document.getElementById('scoreboard').innerHTML = `<div><p class="font-bold text-lg">João</p><p class="text-sky-700 font-semibold">${taskScores['João']} 🐱</p></div><div><p class="font-bold text-lg">Gui</p><p class="text-sky-700 font-semibold">${taskScores['Gui']} 🐱</p></div>`;
+                document.getElementById('scoreboard').innerHTML = `<div><p class="font-bold text-lg">João</p><p class="text-sky-700 font-semibold">${appState.taskScores['João']} 🐱</p></div><div><p class="font-bold text-lg">Gui</p><p class="text-sky-700 font-semibold">${appState.taskScores['Gui']} 🐱</p></div>`;
                 const award = document.getElementById('monthly-award');
-                if (taskScores['João'] > taskScores['Gui']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">João</span></p>`;
-                else if (taskScores['Gui'] > taskScores['João']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">Gui</span></p>`;
+                if (appState.taskScores['João'] > appState.taskScores['Gui']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">João</span></p>`;
+                else if (appState.taskScores['Gui'] > appState.taskScores['João']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">Gui</span></p>`;
                 else award.innerHTML = `<p class="text-sm text-gray-500">🏆 Empate no prêmio de Morador do Mês!</p>`;
                 const taskHistoryList = document.getElementById('task-history-list');
                 taskHistoryList.innerHTML = '';
-                if (taskHistory.length === 0) {
+                if (!appState.taskHistory || appState.taskHistory.length === 0) {
                     taskHistoryList.innerHTML = `<p class="text-center text-gray-500 py-4">Nenhuma tarefa registrada ainda.</p>`;
                     return;
                 }
-                taskHistory.sort((a, b) => b.date - a.date).forEach(task => {
-                    const formattedDate = task.date.toLocaleDateString('pt-BR');
+                [...appState.taskHistory].sort((a, b) => b.date - a.date).forEach(task => {
+                    const formattedDate = new Date(task.date).toLocaleDateString('pt-BR');
                     const taskItem = document.createElement('div');
                     taskItem.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-sm';
                     taskItem.innerHTML = `<div class="flex justify-between items-center"><div><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><p class="font-bold text-rose-500">+${task.points} 🐱</p></div>`;
@@ -351,8 +379,8 @@
             const updateTaskFeedback = () => {
                 const feedbackEl = document.getElementById('task-feedback');
                 feedbackEl.innerHTML = '';
-                if (neededTasks.length > 0) {
-                    neededTasks.forEach(task => {
+                if (appState.neededTasks && appState.neededTasks.length > 0) {
+                    appState.neededTasks.forEach(task => {
                         const comments = negativeFeedback[task] || negativeFeedback['Geral'];
                         if (comments) {
                             feedbackEl.innerHTML += `<p>${comments[Math.floor(Math.random() * comments.length)]}</p>`;
@@ -360,9 +388,9 @@
                     });
                     return;
                 }
-                const recentTasks = taskHistory.filter(t => (new Date() - t.date) < 3 * 24 * 60 * 60 * 1000); // 3 dias
+                const recentTasks = appState.taskHistory ? appState.taskHistory.filter(t => (new Date() - new Date(t.date)) < 3 * 24 * 60 * 60 * 1000) : [];
                 if(recentTasks.length > 0) {
-                    const lastTask = recentTasks.sort((a,b) => b.date - a.date)[0];
+                    const lastTask = recentTasks.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
                     const comments = positiveFeedback[lastTask.type];
                     if(comments) {
                         feedbackEl.innerHTML = `<p class="text-teal-600">${comments[Math.floor(Math.random() * comments.length)]}</p>`;
@@ -374,19 +402,19 @@
                 container.innerHTML = '';
                 Object.keys(taskPoints.types).forEach(task => {
                     if (task === 'Louça') return;
-                    const isNeeded = neededTasks.includes(task);
+                    const isNeeded = appState.neededTasks.includes(task);
                     const button = document.createElement('button');
                     button.textContent = task;
                     button.className = `w-full text-center p-2 rounded-lg cursor-pointer transition text-sm font-medium ${isNeeded ? 'bg-sky-100 text-sky-800' : 'bg-gray-100 hover:bg-gray-200'}`;
                     button.onclick = (e) => {
+                        let newNeededTasks = [...appState.neededTasks];
                         if (isNeeded) {
-                            neededTasks = neededTasks.filter(t => t !== task);
+                            newNeededTasks = newNeededTasks.filter(t => t !== task);
                         } else {
-                            neededTasks.push(task);
+                            newNeededTasks.push(task);
                             showAnimation(e.target, 'emoji-animation', '👎');
                         }
-                        updateTaskFeedback();
-                        populateNeededTasks(); // Re-render to update styles
+                        updateDoc(appStateRef, { neededTasks: newNeededTasks });
                     };
                     container.appendChild(button);
                 });
@@ -394,11 +422,11 @@
             const renderShoppingList = () => {
                 const listEl = document.getElementById('shopping-list');
                 listEl.innerHTML = '';
-                if (shoppingList.length === 0) {
+                if (!appState.shoppingList || appState.shoppingList.length === 0) {
                     listEl.innerHTML = `<p class="text-center text-gray-400 text-sm">A lista de compras está vazia.</p>`;
                     return;
                 }
-                shoppingList.forEach((item, index) => {
+                appState.shoppingList.forEach((item, index) => {
                     const li = document.createElement('li');
                     li.className = 'flex items-center';
                     li.innerHTML = `
@@ -411,41 +439,36 @@
                 });
             };
 
-            // --- FUNÇÕES DE LÓGICA ---
-            const addTransaction = (tx) => {
-                transactions.push(tx);
-                if (tx.valueToSplit > 0) totalPaidBy[tx.payer] += tx.valueToSplit;
-                if (Object.keys(billColors).includes(tx.category)) {
-                    const day = new Date(tx.date + 'T00:00:00').getDate();
-                    if (!fixedBillEvents.some(e => e.day === day && e.label === tx.category)) {
-                        fixedBillEvents.push({ day, label: tx.category, color: billColors[tx.category] });
-                    }
-                }
-                updateBalanceUI();
-                updateHistoryUI();
-            };
+            // --- FUNÇÕES DE LÓGICA (com Firebase) ---
             const resetAccounts = () => {
-                transactions = []; taskHistory = []; neededTasks = []; shoppingList = [];
-                totalPaidBy = { 'João': 0, 'Gui': 0 }; taskScores = { 'João': 0, 'Gui': 0 };
-                initializeApp();
+                const newState = getInitialState();
+                setDoc(appStateRef, newState);
             };
-            const initializeApp = () => {
-                fixedBillEvents = [
-                    { day: 10, label: 'Internet', color: billColors['Internet'] },
-                    { day: 15, label: 'Moradia', color: billColors['Moradia'] }
-                ];
-                addTransaction({ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: new Date().toISOString().split('T')[0] });
-                const today = new Date();
-                const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-                document.getElementById('settlement-date-text').textContent = `Próximo acerto dia 15 de ${monthNames[nextMonth.getMonth()]}`;
-                updateTaskUI();
-                populateNeededTasks();
-                renderShoppingList();
+            const getInitialState = () => {
+                const today = new Date().toISOString().split('T')[0];
+                return {
+                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItemsTotal: 0 }],
+                    taskHistory: [],
+                    neededTasks: [],
+                    shoppingList: [],
+                    taskScores: { 'João': 0, 'Gui': 0 },
+                    postItNote: 'Clique no pino para adicionar um lembrete...'
+                };
             };
 
             // --- EVENT LISTENERS ---
             document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => openExpenseModal(card.dataset.category, { showDiscount: true })));
-            document.getElementById('fixed-bills-card').addEventListener('click', () => { generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); openModal(fixedBillsModal); });
+            document.getElementById('fixed-bills-card').addEventListener('click', () => { 
+                const fixedBillEvents = appState.transactions
+                    .filter(tx => Object.keys(billColors).includes(tx.category))
+                    .map(tx => ({
+                        day: new Date(tx.date + 'T00:00:00').getDate(),
+                        label: tx.category,
+                        color: billColors[tx.category]
+                    }));
+                generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); 
+                openModal(fixedBillsModal); 
+            });
             document.getElementById('add-task-btn').addEventListener('click', (e) => openModal(taskModal));
             allModals.forEach(modal => {
                 modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
@@ -479,7 +502,10 @@
                 document.querySelectorAll('.personal-item-value').forEach(input => personalItemsTotal += parseFloat(input.value) || 0);
                 const valueToSplit = totalValue - personalItemsTotal;
                 if (valueToSplit < 0) return;
-                addTransaction({ category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItemsTotal, valueToSplit, date });
+                
+                const newTransaction = { category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItemsTotal, valueToSplit, date };
+                updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
+                
                 showAnimation(e.submitter, 'coin-animation', '$');
                 closeModal(expenseModal);
             });
@@ -495,13 +521,21 @@
                 const isLouca = type === 'Louça';
                 const level = isLouca ? null : document.getElementById('task-level').value;
                 const points = isLouca ? taskPoints.types[type] : taskPoints.levels[level] * taskPoints.types[type];
-                taskScores[doer] += points;
-                taskHistory.push({ doer, type, level, points, date: new Date() });
-                if (neededTasks.includes(type)) {
-                    neededTasks = neededTasks.filter(t => t !== type);
-                    populateNeededTasks();
+                
+                const newTask = { doer, type, level, points, date: new Date().toISOString() };
+                const newScores = {...appState.taskScores};
+                newScores[doer] += points;
+                let newNeeded = [...appState.neededTasks];
+                if (newNeeded.includes(type)) {
+                    newNeeded = newNeeded.filter(t => t !== type);
                 }
-                updateTaskUI();
+
+                updateDoc(appStateRef, { 
+                    taskHistory: [...appState.taskHistory, newTask],
+                    taskScores: newScores,
+                    neededTasks: newNeeded
+                });
+
                 triggerConfetti();
                 showAnimation(e.submitter, 'points-animation', `+${points} 🐱`);
                 closeModal(taskModal);
@@ -525,21 +559,21 @@
                 e.preventDefault();
                 const input = document.getElementById('shopping-item-input');
                 if (input.value.trim()) {
-                    shoppingList.push({ text: input.value.trim(), checked: false });
+                    const newItem = { text: input.value.trim(), checked: false };
+                    updateDoc(appStateRef, { shoppingList: [...appState.shoppingList, newItem] });
                     input.value = '';
-                    renderShoppingList();
                 }
             });
             document.getElementById('shopping-list').addEventListener('change', (e) => {
                 if (e.target.type === 'checkbox') {
-                    const index = e.target.dataset.index;
-                    shoppingList[index].checked = e.target.checked;
-                    renderShoppingList();
+                    const index = parseInt(e.target.dataset.index, 10);
+                    const newShoppingList = [...appState.shoppingList];
+                    newShoppingList[index].checked = e.target.checked;
+                    updateDoc(appStateRef, { shoppingList: newShoppingList });
                 }
             });
             document.getElementById('clear-shopping-list-btn').addEventListener('click', () => {
-                shoppingList = [];
-                renderShoppingList();
+                updateDoc(appStateRef, { shoppingList: [] });
             });
 
             // Post-it Listeners
@@ -552,12 +586,39 @@
                 postItInput.focus();
             });
             postItInput.addEventListener('blur', () => {
-                postItText.textContent = postItInput.value.trim() || 'Clique no pino para adicionar um lembrete...';
+                const newNote = postItInput.value.trim() || 'Clique no pino para adicionar um lembrete...';
+                updateDoc(appStateRef, { postItNote: newNote });
                 postItInput.classList.add('hidden');
                 postItText.classList.remove('hidden');
             });
 
-            initializeApp();
+            // --- INICIALIZAÇÃO E LISTENER DO FIREBASE ---
+            onSnapshot(appStateRef, (doc) => {
+                if (doc.exists()) {
+                    appState = doc.data();
+                    // Convertendo timestamps do Firestore para datas JS, se necessário
+                    if (appState.taskHistory) {
+                        appState.taskHistory = appState.taskHistory.map(t => ({...t, date: new Date(t.date)}));
+                    }
+                } else {
+                    // Se o documento não existe, cria um estado inicial
+                    appState = getInitialState();
+                    setDoc(appStateRef, appState);
+                }
+                
+                // Atualiza toda a UI com os novos dados
+                const today = new Date();
+                const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                document.getElementById('settlement-date-text').textContent = `Próximo acerto dia 15 de ${monthNames[nextMonth.getMonth()]}`;
+                
+                postItText.textContent = appState.postItNote || 'Clique no pino para adicionar um lembrete...';
+                
+                updateBalanceUI();
+                updateHistoryUI();
+                updateTaskUI();
+                populateNeededTasks();
+                renderShoppingList();
+            });
         });
     </script>
 </body>
