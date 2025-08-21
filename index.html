@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestão da Casa</title>
     
     <!-- Tailwind CSS CDN -->
@@ -20,7 +20,7 @@
         body { font-family: 'Inter', sans-serif; }
         .modal-backdrop { transition: opacity 0.3s ease-in-out; }
         ::placeholder { color: #9ca3af; }
-        .points-animation, .emoji-animation {
+        .points-animation, .emoji-animation, .feedback-emoji {
             position: fixed;
             font-size: 1.5rem;
             font-weight: bold;
@@ -31,7 +31,7 @@
         .points-animation {
              color: #fb7185; /* rose-400 */
         }
-        .emoji-animation {
+        .emoji-animation, .feedback-emoji {
             font-size: 1.75rem;
         }
         @keyframes float-up {
@@ -57,6 +57,35 @@
         @keyframes float-and-spin {
             from { transform: translateY(0) rotateY(0deg); opacity: 1; }
             to { transform: translateY(-80px) rotateY(1080deg); opacity: 0; }
+        }
+        .speech-bubble {
+            position: relative;
+            background: #f0f9ff; /* sky-50 */
+            border: 1px solid #e0f2fe; /* sky-100 */
+            border-radius: .5em;
+            padding: 10px;
+            color: #0c4a6e; /* sky-900 */
+        }
+        .speech-bubble.positive {
+            background: #f0fdfa; /* teal-50 */
+            border-color: #ccfbf1; /* teal-100 */
+            color: #134e4a; /* teal-900 */
+        }
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-bottom-color: #e0f2fe; /* sky-100 */
+            border-top: 0;
+            margin-left: -10px;
+            margin-top: -10px;
+        }
+        .speech-bubble.positive:after {
+            border-bottom-color: #ccfbf1; /* teal-100 */
         }
     </style>
 </head>
@@ -119,7 +148,7 @@
                     <div class="bg-white rounded-2xl shadow-md p-5">
                         <div id="scoreboard" class="flex justify-around items-center text-center mb-4"></div>
                         <div id="monthly-award" class="text-center mb-4"></div>
-                        <div id="task-feedback" class="text-center text-sm text-gray-500 italic mb-4 space-y-1 min-h-[20px]"></div>
+                        <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
                         <div class="flex flex-col space-y-3">
                              <div>
                                 <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
@@ -270,23 +299,30 @@
 
             // --- FUNÇÕES DE UI ---
             const updateBalanceUI = () => {
-                const totalPaidBy = appState.transactions.reduce((acc, tx) => {
-                    acc[tx.payer] = (acc[tx.payer] || 0) + tx.valueToSplit;
-                    return acc;
-                }, { 'João': 0, 'Gui': 0 });
+                let netBalance = { 'João': 0, 'Gui': 0 };
+                appState.transactions.forEach(tx => {
+                    const payer = tx.payer;
+                    const otherPerson = payer === 'João' ? 'Gui' : 'João';
+                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 }; // FIX: Default value
+                    const personalItemsForPayer = personalItems[payer];
+                    const personalItemsForOther = personalItems[otherPerson];
+                    const sharedValue = tx.totalValue - personalItemsForPayer - personalItemsForOther;
+                    const sharedSplit = sharedValue / 2;
+                    const payerResponsibility = sharedSplit + personalItemsForPayer;
+                    const otherPersonResponsibility = sharedSplit + personalItemsForOther;
+                    netBalance[payer] += tx.totalValue - payerResponsibility;
+                    netBalance[otherPerson] -= otherPersonResponsibility;
+                });
 
-                const difference = totalPaidBy['João'] - totalPaidBy['Gui'];
-                let balanceAmount = 0;
-                if (difference > 0.001) {
-                    balanceAmount = difference / 2;
+                let balanceAmount = netBalance['João'];
+                if (balanceAmount > 0.001) {
                     document.getElementById('balance-text').innerHTML = `Gui deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a João`;
-                } else if (difference < -0.001) {
-                    balanceAmount = Math.abs(difference) / 2;
-                    document.getElementById('balance-text').innerHTML = `João deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a Gui`;
+                } else if (balanceAmount < -0.001) {
+                    document.getElementById('balance-text').innerHTML = `João deve <span class="text-sky-700">R$ ${Math.abs(balanceAmount).toFixed(2)}</span> a Gui`;
                 } else {
                     document.getElementById('balance-text').textContent = 'Tudo certo por aqui!';
                 }
-                return { difference, balanceAmount };
+                return { difference: balanceAmount, balanceAmount: Math.abs(balanceAmount) };
             };
             const updateHistoryUI = () => {
                 const historyList = document.getElementById('history-list');
@@ -297,16 +333,22 @@
                 }
                 [...appState.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
                     const debtor = tx.payer === 'João' ? 'Gui' : 'João';
-                    const amountPerPerson = tx.valueToSplit / 2;
+                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 }; // FIX: Default value
+                    const personalItemsForPayer = personalItems[tx.payer];
+                    const personalItemsForOther = personalItems[debtor];
+                    const sharedValue = tx.totalValue - personalItemsForPayer - personalItemsForOther;
+                    const amountPerPerson = (sharedValue / 2) + personalItemsForOther;
+
                     const formattedDate = new Date(tx.date + 'T00:00:00').toLocaleDateString('pt-BR');
                     const purchaseNameHTML = tx.name ? `<p class="text-sm font-medium text-gray-600">${tx.name}</p>` : '';
                     let breakdownHTML = '';
-                    if (tx.personalItemsTotal > 0) {
+                    if (personalItemsForPayer > 0 || personalItemsForOther > 0) {
                         breakdownHTML = `
                             <div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2">
                                 <p>Total: R$ ${tx.totalValue.toFixed(2)}</p>
-                                <p>Itens Pessoais: - R$ ${tx.personalItemsTotal.toFixed(2)}</p>
-                                <p class="font-medium">A dividir: R$ ${tx.valueToSplit.toFixed(2)}</p>
+                                ${personalItemsForPayer > 0 ? `<p>Itens Pessoais (${tx.payer}): - R$ ${personalItemsForPayer.toFixed(2)}</p>` : ''}
+                                ${personalItemsForOther > 0 ? `<p>Itens Pessoais (${debtor}): - R$ ${personalItemsForOther.toFixed(2)}</p>` : ''}
+                                <p class="font-medium">A dividir: R$ ${sharedValue.toFixed(2)}</p>
                             </div>
                         `;
                     }
@@ -377,7 +419,12 @@
                     appState.neededTasks.forEach(task => {
                         const comments = negativeFeedback[task] || negativeFeedback['Geral'];
                         if (comments) {
-                            feedbackEl.innerHTML += `<p>${comments[Math.floor(Math.random() * comments.length)]}</p>`;
+                            const comment = comments[Math.floor(Math.random() * comments.length)];
+                            const bubble = document.createElement('div');
+                            bubble.className = 'speech-bubble';
+                            bubble.textContent = comment;
+                            feedbackEl.appendChild(bubble);
+                            showFeedbackEmoji('negative', feedbackEl);
                         }
                     });
                     return;
@@ -387,9 +434,23 @@
                     const lastTask = recentTasks.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
                     const comments = positiveFeedback[lastTask.type];
                     if(comments) {
-                        feedbackEl.innerHTML = `<p class="text-teal-600">${comments[Math.floor(Math.random() * comments.length)]}</p>`;
+                        const comment = comments[Math.floor(Math.random() * comments.length)];
+                        const bubble = document.createElement('div');
+                        bubble.className = 'speech-bubble positive';
+                        bubble.textContent = comment;
+                        feedbackEl.appendChild(bubble);
+                        showFeedbackEmoji('positive', feedbackEl);
                     }
                 }
+            };
+             const showFeedbackEmoji = (type, targetElement) => {
+                const negativeEmojis = ['🤢', '🤮', '😵'];
+                const positiveEmojis = ['✨', '🎉', '🥳'];
+                const emoji = type === 'negative'
+                    ? negativeEmojis[Math.floor(Math.random() * negativeEmojis.length)]
+                    : positiveEmojis[Math.floor(Math.random() * positiveEmojis.length)];
+                
+                showAnimation(targetElement, 'feedback-emoji', emoji);
             };
             const populateNeededTasks = () => {
                 const container = document.getElementById('needed-tasks-container');
@@ -441,7 +502,7 @@
             const getInitialState = () => {
                 const today = new Date().toISOString().split('T')[0];
                 return {
-                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItemsTotal: 0, name: '' }],
+                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItems: { 'João': 0, 'Gui': 0 }, name: '' }],
                     taskHistory: [],
                     neededTasks: [],
                     shoppingList: [],
@@ -472,32 +533,47 @@
                 const discountSection = document.getElementById('discount-section');
                 discountSection.classList.toggle('hidden');
                 if (!discountSection.classList.contains('hidden') && document.getElementById('personal-items-list').children.length === 0) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'flex items-center space-x-2';
-                    itemDiv.innerHTML = `<input type="text" placeholder="Nome" class="w-2/3 px-3 py-2 border rounded-lg text-sm"><input type="number" step="0.01" placeholder="Valor" class="personal-item-value w-1/3 px-3 py-2 border rounded-lg text-sm"><button type="button" class="remove-item-btn text-red-500 hover:text-red-700 font-bold">&times;</button>`;
-                    document.getElementById('personal-items-list').appendChild(itemDiv);
-                    itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+                    addPersonalItemInput();
                 }
             });
-            document.getElementById('add-item-btn').addEventListener('click', (e) => {
-                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center space-x-2';
-                itemDiv.innerHTML = `<input type="text" placeholder="Nome" class="w-2/3 px-3 py-2 border rounded-lg text-sm"><input type="number" step="0.01" placeholder="Valor" class="personal-item-value w-1/3 px-3 py-2 border rounded-lg text-sm"><button type="button" class="remove-item-btn text-red-500 hover:text-red-700 font-bold">&times;</button>`;
+            const addPersonalItemInput = () => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'grid grid-cols-3 gap-2 items-center';
+                itemDiv.innerHTML = `
+                    <input type="number" step="0.01" placeholder="Valor" class="personal-item-value col-span-1 px-3 py-2 border rounded-lg text-sm">
+                    <select class="personal-item-owner col-span-2 px-3 py-2 border rounded-lg text-sm">
+                        <option value="João">Item de João</option>
+                        <option value="Gui">Item de Gui</option>
+                    </select>
+                `;
                 document.getElementById('personal-items-list').appendChild(itemDiv);
-                itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
-            });
+            };
+            document.getElementById('add-item-btn').addEventListener('click', addPersonalItemInput);
             document.querySelectorAll('.fixed-bill-btn').forEach(btn => btn.addEventListener('click', (e) => { closeModal(fixedBillsModal); openExpenseModal(e.target.dataset.bill, { defaultPayer: 'Gui', showDiscount: false }); }));
             document.getElementById('expense-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
                 const date = document.getElementById('expense-date').value;
                 if (totalValue <= 0 || !date) return;
-                let personalItemsTotal = 0;
-                document.querySelectorAll('.personal-item-value').forEach(input => personalItemsTotal += parseFloat(input.value) || 0);
-                const valueToSplit = totalValue - personalItemsTotal;
-                if (valueToSplit < 0) return;
                 
-                const newTransaction = { category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItemsTotal, valueToSplit, date };
+                const personalItems = { 'João': 0, 'Gui': 0 };
+                document.querySelectorAll('#personal-items-list > div').forEach(itemDiv => {
+                    const owner = itemDiv.querySelector('.personal-item-owner').value;
+                    const value = parseFloat(itemDiv.querySelector('.personal-item-value').value) || 0;
+                    personalItems[owner] += value;
+                });
+                const personalItemsTotal = personalItems['João'] + personalItems['Gui'];
+                
+                const newTransaction = { 
+                    category: currentCategory, 
+                    payer: document.getElementById('payer').value, 
+                    name: document.getElementById('purchase-name').value, 
+                    totalValue, 
+                    personalItems,
+                    valueToSplit: totalValue - personalItemsTotal, // Legacy, can be removed later
+                    personalItemsTotal, // Legacy
+                    date 
+                };
                 updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
                 
                 showAnimation(e.submitter, 'coin-animation', '$');
