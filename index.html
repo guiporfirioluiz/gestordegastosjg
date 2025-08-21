@@ -188,11 +188,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // ===================================================================================
-        // COLE SUAS CONFIGURAÇÕES DO FIREBASE AQUI
-        // Encontre isso no seu console do Firebase:
-        // Configurações do Projeto > Geral > Seus apps > App Web > Configuração
-        // ===================================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCOfFUWw45l8f9_25tFfE14zpbk3k-tFX8",
             authDomain: "gestaodegastosjg.firebaseapp.com",
@@ -201,7 +196,6 @@
             messagingSenderId: "404141341166",
             appId: "1:404141341166:web:2a47d484f7ea01802376ff"
         };
-        // ===================================================================================
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
@@ -401,7 +395,7 @@
                 const container = document.getElementById('needed-tasks-container');
                 container.innerHTML = '';
                 Object.keys(taskPoints.types).forEach(task => {
-                    if (task === 'Louça') return;
+                    if (task === 'Louça' || task === 'Quarto') return;
                     const isNeeded = appState.neededTasks.includes(task);
                     const button = document.createElement('button');
                     button.textContent = task;
@@ -447,7 +441,7 @@
             const getInitialState = () => {
                 const today = new Date().toISOString().split('T')[0];
                 return {
-                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItemsTotal: 0 }],
+                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItemsTotal: 0, name: '' }],
                     taskHistory: [],
                     neededTasks: [],
                     shoppingList: [],
@@ -604,6 +598,7 @@
                     // Se o documento não existe, cria um estado inicial
                     appState = getInitialState();
                     setDoc(appStateRef, appState);
+                    return; // Retorna para evitar renderizar com estado vazio
                 }
                 
                 // Atualiza toda a UI com os novos dados
