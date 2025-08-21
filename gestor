@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão da Casa</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Confetti JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal-backdrop { transition: opacity 0.3s ease-in-out; }
+        ::placeholder { color: #9ca3af; }
+        .points-animation, .emoji-animation {
+            position: fixed;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 100;
+            animation: float-up 2s ease-out forwards;
+            pointer-events: none;
+        }
+        .points-animation {
+             color: #fb7185; /* rose-400 */
+        }
+        .emoji-animation {
+            font-size: 1.75rem;
+        }
+        @keyframes float-up {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-60px); opacity: 0; }
+        }
+        .coin-animation {
+            position: fixed;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: #facc15; /* yellow-400 */
+            border: 3px solid #ca8a04; /* yellow-600 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ca8a04;
+            z-index: 100;
+            animation: float-and-spin 1.5s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes float-and-spin {
+            from { transform: translateY(0) rotateY(0deg); opacity: 1; }
+            to { transform: translateY(-80px) rotateY(1080deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
+
+    <!-- Container Principal -->
+    <div class="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8">
+        <div class="w-full max-w-md mx-auto">
+
+            <header class="mb-8 text-center">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestão da Casa</h1>
+                <p id="settlement-date-text" class="text-gray-500"></p>
+            </header>
+
+            <section id="balance-section" class="mb-4 p-5 bg-white rounded-2xl shadow-md text-center">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Balanço Geral</h2>
+                <p id="balance-text" class="text-xl font-bold text-gray-800">Tudo certo por aqui!</p>
+            </section>
+
+            <!-- Seção Post-it -->
+            <section id="post-it-section" class="mb-8 relative">
+                <div class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
+                    <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
+                    <textarea id="post-it-text-input" class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700" placeholder="Digite seu lembrete..."></textarea>
+                </div>
+                <button id="edit-post-it-btn" class="absolute -top-3 -right-2 w-8 h-8 bg-red-500 rounded-full shadow-lg transform -rotate-45 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                    <div class="w-4 h-4 bg-red-300 rounded-full"></div>
+                </button>
+            </section>
+            
+            <div class="mb-8 text-center">
+                <button id="settle-up-btn" class="w-full sm:w-auto px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Acerto de Contas</button>
+            </div>
+
+            <main>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Gastos</h2>
+                <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
+                    <div data-category="Mercado" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Mercado</div></div>
+                    <div id="fixed-bills-card" class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Contas Fixas</div></div>
+                    <div data-category="Compras Coletivas" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Compras Coletivas</div></div>
+                    <div data-category="Outro" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outro</div></div>
+                </div>
+
+                <!-- Seção Lista de Compras -->
+                <section id="shopping-list-section" class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Lista de Compras</h2>
+                    <div class="bg-white rounded-2xl shadow-md p-5">
+                        <form id="shopping-list-form" class="flex space-x-2 mb-4">
+                            <input type="text" id="shopping-item-input" placeholder="Adicionar item..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                            <button type="submit" class="px-4 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg hover:bg-sky-400 transition">+</button>
+                        </form>
+                        <ul id="shopping-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+                        <button id="clear-shopping-list-btn" class="w-full mt-4 text-sm text-rose-500 hover:text-rose-700">Limpar Lista</button>
+                    </div>
+                </section>
+
+                <!-- Seção de Gamificação -->
+                <section id="gamification-section">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
+                    <div class="bg-white rounded-2xl shadow-md p-5">
+                        <div id="scoreboard" class="flex justify-around items-center text-center mb-4"></div>
+                        <div id="monthly-award" class="text-center mb-4"></div>
+                        <div id="task-feedback" class="text-center text-sm text-gray-500 italic mb-4 space-y-1 min-h-[20px]"></div>
+                        <div class="flex flex-col space-y-3">
+                             <div>
+                                <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
+                                <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
+                            </div>
+                            <button id="add-task-btn" class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar Tarefa Feita</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="history-section" class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Transações</h3>
+                    <div id="history-list" class="space-y-3"></div>
+                </section>
+                
+                <section id="task-history-section" class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Tarefas</h3>
+                    <div id="task-history-list" class="space-y-3"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="expense-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6"><h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <form id="expense-form" class="space-y-4">
+                <div id="purchase-name-container" class="hidden"><label for="purchase-name" class="block text-sm font-medium text-gray-700 mb-1">Nome da Compra (Opcional)</label><input type="text" id="purchase-name" placeholder="Ex: Churrasco de sábado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
+                <div><label for="expense-date" class="block text-sm font-medium text-gray-700 mb-1">Data</label><input type="date" id="expense-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
+                <div><label for="payer" class="block text-sm font-medium text-gray-700 mb-1">Quem pagou?</label><select id="payer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"><option>João</option><option>Gui</option></select></div>
+                <div><label for="total-value" class="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label><input type="number" id="total-value" step="0.01" placeholder="150.50" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500" required></div>
+                <div id="discount-container" class="pt-2"><button type="button" id="toggle-discount-btn" class="w-full text-sm text-sky-600 hover:text-sky-800 font-medium py-2 rounded-lg bg-sky-50 hover:bg-sky-100 transition">Descontar itens pessoais</button><div id="discount-section" class="hidden space-y-3 mt-4"><div id="personal-items-list"></div><button type="button" id="add-item-btn" class="w-full text-sm text-teal-600 hover:text-teal-800 font-medium py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition">+ Adicionar item</button></div></div>
+                <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button type="submit" class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition">Confirmar</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="fixed-bills-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Contas Fixas</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <div id="calendar-container" class="mb-4"></div>
+            <div id="calendar-legend" class="flex flex-wrap gap-x-4 gap-y-1 text-xs mb-4"></div>
+            <div class="space-y-3 pt-4 border-t"><div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center"><p class="font-semibold">Moradia</p><p class="font-bold text-gray-700">R$ 600.00</p></div><button data-bill="Água" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Água</button><button data-bill="Luz" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Luz</button><button data-bill="Internet" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Internet</button></div>
+        </div>
+    </div>
+    <div id="settlement-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Acerto de Contas</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <div class="space-y-4"><p id="settlement-summary" class="text-center text-lg">Calculando...</p><p class="text-sm text-center text-gray-500">Ao confirmar, o histórico será reiniciado para o próximo mês.</p><div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button id="confirm-settlement-btn" class="px-4 py-2 bg-sky-400 text-white font-semibold rounded-lg hover:bg-sky-500 transition">Confirmar Acerto</button></div></div>
+        </div>
+    </div>
+    <div id="task-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-gray-800">Registrar Tarefa</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <form id="task-form" class="space-y-4">
+                <div><label for="task-doer" class="block text-sm font-medium text-gray-700 mb-1">Quem fez?</label><select id="task-doer" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option>João</option><option>Gui</option></select></div>
+                <div><label for="task-type" class="block text-sm font-medium text-gray-700 mb-1">Tarefa</label><select id="task-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option value="Louça">Louça</option><option value="Banheiro">Banheiro</option><option value="Cozinha">Cozinha</option><option value="Sala">Sala</option><option value="Escada">Escada</option></select></div>
+                <div id="task-level-container"><label for="task-level" class="block text-sm font-medium text-gray-700 mb-1">Nível de Limpeza</label><select id="task-level" class="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100"><option value="Varrida">Varrida</option><option value="Passada de Pano">Passada de Pano</option><option value="Lavada">Lavada</option></select></div>
+                <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button><button type="submit" class="px-4 py-2 bg-rose-400 text-white font-semibold rounded-lg">Registrar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ESTADO DA APLICAÇÃO ---
+            let transactions = [], taskHistory = [], fixedBillEvents = [], neededTasks = [], shoppingList = [];
+            let totalPaidBy = { 'João': 0, 'Gui': 0 }, taskScores = { 'João': 0, 'Gui': 0 };
+            let currentCategory = '';
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const billColors = { 'Moradia': 'bg-sky-400', 'Internet': 'bg-violet-400', 'Luz': 'bg-amber-400', 'Água': 'bg-cyan-400' };
+            const taskPoints = {
+                levels: { 'Varrida': 1, 'Passada de Pano': 2, 'Lavada': 3 },
+                types: { 'Escada': 4, 'Sala': 4, 'Banheiro': 3, 'Cozinha': 4, 'Louça': 2 }
+            };
+            const positiveFeedback = {
+                'Louça': ["A louça está brilhando!", "Essa pia nunca esteve tão limpa.", "Até que enfim, alguém lavou a louça!"], 
+                'Banheiro': ["Até que enfim lavaram o banheiro!", "O banheiro está um brinco!", "Cheirinho de limpeza no banheiro!"], 
+                'Cozinha': ["A cozinha está limpa! Pelo menos pelos próximos 10 minutos.", "Dá até gosto de cozinhar agora.", "Cozinha limpa, coração feliz."], 
+                'Sala': ["Nada como uma sala limpa!", "A sala está pronta para receber visitas.", "Finalmente um lugar decente para sentar."], 
+                'Escada': ["Ufa! A escada já estava pedindo por misericórdia.", "Agora dá pra subir sem medo de escorregar.", "A escada agradece a limpeza."]
+            };
+            const negativeFeedback = {
+                'Cozinha': ["Foi declarada calamidade pública na cozinha.", "A cozinha virou um ecossistema próprio.", "Que tipo de bactéria é essa sendo cultivada na geladeira?", "Gente, sério. Não vou nem fazer piada sobre a cozinha... Só limpem.", "A pia está pedindo socorro.", "Tem comida na geladeira com mais tempo de casa que vocês.", "A cozinha parece um cenário de guerra.", "O cheiro da cozinha está... exótico.", "Acho que vi um rato usando um prato de barco na pia."],
+                'Banheiro': ["Eu não entraria no banheiro se fosse você.", "O lado bom desse banheiro imundo é que nem dá para ver a cara de pau no espelho.", "Acho que o lixo do banheiro vai criar vida própria.", "O espelho do banheiro já não reflete mais nada.", "O vaso sanitário está em estado de calamidade.", "O banheiro virou uma sauna de germes.", "Acho que o banheiro está em quarentena.", "O banheiro está parecendo um pântano.", "O chuveiro está com mais limo que a Amazônia.", "O banheiro está um nojo, simples assim."],
+                'Sala': ["Malham tanto e não conseguem erguer uma vassoura pra limpar essa sala?", "O puppy estava prenho? Ah não é só uma BOLA ENORME DE PELOS no canto sala.", "A poeira na sala está competindo com o Saara.", "A sala virou uma extensão do quarto de vocês.", "Se a gente ligar o aspirador, ele engasga.", "A sala está um caos, parece que passou um furacão.", "A TV está com mais marcas de dedo que um celular.", "Repitam comigo: Chão sujo, casa suja.", "A sala está pedindo socorro."],
+                'Escada': ["Se alguém cair na escada a quantidade de pelo até amortece.", "A escada está mais perigosa que a montanha-russa.", "A escada virou um campo minado de sujeira.", "Cada degrau é uma nova surpresa... desagradável.", "A escada não vê uma vassoura desde o ano passado.", "A escada está com mais poeira que um museu.", "A escada está um perigo para a saúde pública.", "A escada está um lixo, literalmente.", "A escada está um convite para o tétano."],
+                'Geral': ["Estou adorando o experimento social vivendo no lixão da mãe lucinda.", "Na revolução das máquinas eu faço questão de começar eliminando a casa de vocês.", "A casa foi abandonada? Parece!", "Higiene mental começa com higiene pessoal, fica a dica meninos!"]
+            };
+
+            // --- ELEMENTOS DO DOM ---
+            const allModals = document.querySelectorAll('.modal-backdrop');
+            const expenseModal = document.getElementById('expense-modal');
+            const fixedBillsModal = document.getElementById('fixed-bills-modal');
+            const settlementModal = document.getElementById('settlement-modal');
+            const taskModal = document.getElementById('task-modal');
+            
+            // --- FUNÇÕES DE MODAL ---
+            const openModal = (modal) => {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modal.querySelector('div > div').classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            };
+            const closeModal = (modal) => {
+                if (!modal) return;
+                modal.classList.add('opacity-0');
+                modal.querySelector('div > div').classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    if (modal.id === 'expense-modal') {
+                        document.getElementById('personal-items-list').innerHTML = '';
+                        document.getElementById('discount-section').classList.add('hidden');
+                    }
+                }, 300);
+            };
+            const openExpenseModal = (category, options = {}) => {
+                const { defaultPayer = 'João', showDiscount = true } = options;
+                currentCategory = category;
+                expenseModal.querySelector('#modal-title').textContent = `Adicionar Gasto de ${category}`;
+                document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('payer').value = defaultPayer;
+                document.getElementById('discount-container').style.display = showDiscount ? 'block' : 'none';
+                const purchaseNameContainer = document.getElementById('purchase-name-container');
+                purchaseNameContainer.style.display = (category === 'Compras Coletivas' || category === 'Outro') ? 'block' : 'none';
+                openModal(expenseModal);
+            };
+
+            // --- FUNÇÕES DE UI ---
+            const updateBalanceUI = () => {
+                const difference = totalPaidBy['João'] - totalPaidBy['Gui'];
+                let balanceAmount = 0;
+                if (difference > 0.001) {
+                    balanceAmount = difference / 2;
+                    document.getElementById('balance-text').innerHTML = `Gui deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a João`;
+                } else if (difference < -0.001) {
+                    balanceAmount = Math.abs(difference) / 2;
+                    document.getElementById('balance-text').innerHTML = `João deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a Gui`;
+                } else {
+                    document.getElementById('balance-text').textContent = 'Tudo certo por aqui!';
+                }
+                return { difference, balanceAmount };
+            };
+            const updateHistoryUI = () => {
+                const historyList = document.getElementById('history-list');
+                historyList.innerHTML = '';
+                if (transactions.length === 0) {
+                    historyList.innerHTML = `<p class="text-center text-gray-500 py-4">Nenhum gasto registrado ainda.</p>`;
+                    return;
+                }
+                transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
+                    const debtor = tx.payer === 'João' ? 'Gui' : 'João';
+                    const amountPerPerson = tx.valueToSplit / 2;
+                    const formattedDate = new Date(tx.date + 'T00:00:00').toLocaleDateString('pt-BR');
+                    const purchaseNameHTML = tx.name ? `<p class="text-sm font-medium text-gray-600">${tx.name}</p>` : '';
+                    let breakdownHTML = '';
+                    if (tx.personalItemsTotal > 0) {
+                        breakdownHTML = `
+                            <div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2">
+                                <p>Total: R$ ${tx.totalValue.toFixed(2)}</p>
+                                <p>Itens Pessoais: - R$ ${tx.personalItemsTotal.toFixed(2)}</p>
+                                <p class="font-medium">A dividir: R$ ${tx.valueToSplit.toFixed(2)}</p>
+                            </div>
+                        `;
+                    }
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200';
+                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}`;
+                    historyList.appendChild(historyItem);
+                });
+            };
+            const updateTaskUI = () => {
+                document.getElementById('scoreboard').innerHTML = `<div><p class="font-bold text-lg">João</p><p class="text-sky-700 font-semibold">${taskScores['João']} 🐱</p></div><div><p class="font-bold text-lg">Gui</p><p class="text-sky-700 font-semibold">${taskScores['Gui']} 🐱</p></div>`;
+                const award = document.getElementById('monthly-award');
+                if (taskScores['João'] > taskScores['Gui']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">João</span></p>`;
+                else if (taskScores['Gui'] > taskScores['João']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">Gui</span></p>`;
+                else award.innerHTML = `<p class="text-sm text-gray-500">🏆 Empate no prêmio de Morador do Mês!</p>`;
+                const taskHistoryList = document.getElementById('task-history-list');
+                taskHistoryList.innerHTML = '';
+                if (taskHistory.length === 0) {
+                    taskHistoryList.innerHTML = `<p class="text-center text-gray-500 py-4">Nenhuma tarefa registrada ainda.</p>`;
+                    return;
+                }
+                taskHistory.sort((a, b) => b.date - a.date).forEach(task => {
+                    const formattedDate = task.date.toLocaleDateString('pt-BR');
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-sm';
+                    taskItem.innerHTML = `<div class="flex justify-between items-center"><div><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><p class="font-bold text-rose-500">+${task.points} 🐱</p></div>`;
+                    taskHistoryList.appendChild(taskItem);
+                });
+                updateTaskFeedback();
+            };
+            const generateCalendar = (containerId, legendId, events, colors) => {
+                const container = document.getElementById(containerId);
+                const legendContainer = document.getElementById(legendId);
+                const now = new Date();
+                const month = now.getMonth();
+                const year = now.getFullYear();
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                let calendarHTML = `<h3 class="font-semibold text-center mb-2">${monthNames[month]} ${year}</h3><div class="grid grid-cols-7 text-center text-xs text-gray-500 mb-1"><div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div></div><div class="grid grid-cols-7 gap-1">`;
+                for (let i = 0; i < firstDay; i++) calendarHTML += `<div></div>`;
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const isToday = day === now.getDate() ? 'bg-sky-500 text-white' : 'bg-gray-100';
+                    const eventsOnDay = events.filter(e => e.day === day);
+                    let eventDots = eventsOnDay.length > 0 ? `<div class="absolute bottom-1 flex space-x-0.5">${eventsOnDay.map(e => `<div class="w-1.5 h-1.5 ${e.color} rounded-full"></div>`).join('')}</div>` : '';
+                    calendarHTML += `<div class="relative flex items-center justify-center h-8 rounded-full ${isToday}">${day}${eventDots}</div>`;
+                }
+                calendarHTML += `</div>`;
+                container.innerHTML = calendarHTML;
+                legendContainer.innerHTML = [...new Set(events.map(e => e.label))].map(label => `<div class="flex items-center"><div class="w-2 h-2 ${colors[label]} rounded-full mr-1.5"></div>${label}</div>`).join('');
+            };
+            const triggerConfetti = () => {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            };
+            const showAnimation = (targetElement, className, text = '') => {
+                const rect = targetElement.getBoundingClientRect();
+                const animationEl = document.createElement('div');
+                animationEl.className = className;
+                animationEl.textContent = text;
+                animationEl.style.left = `${rect.left + rect.width / 2 - 14}px`;
+                animationEl.style.top = `${rect.top - 14}px`;
+                document.body.appendChild(animationEl);
+                setTimeout(() => animationEl.remove(), 1500);
+            };
+            const updateTaskFeedback = () => {
+                const feedbackEl = document.getElementById('task-feedback');
+                feedbackEl.innerHTML = '';
+                if (neededTasks.length > 0) {
+                    neededTasks.forEach(task => {
+                        const comments = negativeFeedback[task] || negativeFeedback['Geral'];
+                        if (comments) {
+                            feedbackEl.innerHTML += `<p>${comments[Math.floor(Math.random() * comments.length)]}</p>`;
+                        }
+                    });
+                    return;
+                }
+                const recentTasks = taskHistory.filter(t => (new Date() - t.date) < 3 * 24 * 60 * 60 * 1000); // 3 dias
+                if(recentTasks.length > 0) {
+                    const lastTask = recentTasks.sort((a,b) => b.date - a.date)[0];
+                    const comments = positiveFeedback[lastTask.type];
+                    if(comments) {
+                        feedbackEl.innerHTML = `<p class="text-teal-600">${comments[Math.floor(Math.random() * comments.length)]}</p>`;
+                    }
+                }
+            };
+            const populateNeededTasks = () => {
+                const container = document.getElementById('needed-tasks-container');
+                container.innerHTML = '';
+                Object.keys(taskPoints.types).forEach(task => {
+                    if (task === 'Louça') return;
+                    const isNeeded = neededTasks.includes(task);
+                    const button = document.createElement('button');
+                    button.textContent = task;
+                    button.className = `w-full text-center p-2 rounded-lg cursor-pointer transition text-sm font-medium ${isNeeded ? 'bg-sky-100 text-sky-800' : 'bg-gray-100 hover:bg-gray-200'}`;
+                    button.onclick = (e) => {
+                        if (isNeeded) {
+                            neededTasks = neededTasks.filter(t => t !== task);
+                        } else {
+                            neededTasks.push(task);
+                            showAnimation(e.target, 'emoji-animation', '👎');
+                        }
+                        updateTaskFeedback();
+                        populateNeededTasks(); // Re-render to update styles
+                    };
+                    container.appendChild(button);
+                });
+            };
+            const renderShoppingList = () => {
+                const listEl = document.getElementById('shopping-list');
+                listEl.innerHTML = '';
+                if (shoppingList.length === 0) {
+                    listEl.innerHTML = `<p class="text-center text-gray-400 text-sm">A lista de compras está vazia.</p>`;
+                    return;
+                }
+                shoppingList.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center';
+                    li.innerHTML = `
+                        <label class="flex items-center w-full cursor-pointer">
+                            <input type="checkbox" data-index="${index}" class="h-4 w-4 rounded border-gray-300 text-sky-500 focus:ring-sky-500" ${item.checked ? 'checked' : ''}>
+                            <span class="ml-3 ${item.checked ? 'line-through text-gray-400' : ''}">${item.text}</span>
+                        </label>
+                    `;
+                    listEl.appendChild(li);
+                });
+            };
+
+            // --- FUNÇÕES DE LÓGICA ---
+            const addTransaction = (tx) => {
+                transactions.push(tx);
+                if (tx.valueToSplit > 0) totalPaidBy[tx.payer] += tx.valueToSplit;
+                if (Object.keys(billColors).includes(tx.category)) {
+                    const day = new Date(tx.date + 'T00:00:00').getDate();
+                    if (!fixedBillEvents.some(e => e.day === day && e.label === tx.category)) {
+                        fixedBillEvents.push({ day, label: tx.category, color: billColors[tx.category] });
+                    }
+                }
+                updateBalanceUI();
+                updateHistoryUI();
+            };
+            const resetAccounts = () => {
+                transactions = []; taskHistory = []; neededTasks = []; shoppingList = [];
+                totalPaidBy = { 'João': 0, 'Gui': 0 }; taskScores = { 'João': 0, 'Gui': 0 };
+                initializeApp();
+            };
+            const initializeApp = () => {
+                fixedBillEvents = [
+                    { day: 10, label: 'Internet', color: billColors['Internet'] },
+                    { day: 15, label: 'Moradia', color: billColors['Moradia'] }
+                ];
+                addTransaction({ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: new Date().toISOString().split('T')[0] });
+                const today = new Date();
+                const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                document.getElementById('settlement-date-text').textContent = `Próximo acerto dia 15 de ${monthNames[nextMonth.getMonth()]}`;
+                updateTaskUI();
+                populateNeededTasks();
+                renderShoppingList();
+            };
+
+            // --- EVENT LISTENERS ---
+            document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => openExpenseModal(card.dataset.category, { showDiscount: true })));
+            document.getElementById('fixed-bills-card').addEventListener('click', () => { generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); openModal(fixedBillsModal); });
+            document.getElementById('add-task-btn').addEventListener('click', (e) => openModal(taskModal));
+            allModals.forEach(modal => {
+                modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
+                modal.querySelectorAll('.close-modal-btn, .cancel-btn').forEach(btn => btn.addEventListener('click', () => closeModal(modal)));
+            });
+            document.getElementById('toggle-discount-btn').addEventListener('click', (e) => {
+                const discountSection = document.getElementById('discount-section');
+                discountSection.classList.toggle('hidden');
+                if (!discountSection.classList.contains('hidden') && document.getElementById('personal-items-list').children.length === 0) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex items-center space-x-2';
+                    itemDiv.innerHTML = `<input type="text" placeholder="Nome" class="w-2/3 px-3 py-2 border rounded-lg text-sm"><input type="number" step="0.01" placeholder="Valor" class="personal-item-value w-1/3 px-3 py-2 border rounded-lg text-sm"><button type="button" class="remove-item-btn text-red-500 hover:text-red-700 font-bold">&times;</button>`;
+                    document.getElementById('personal-items-list').appendChild(itemDiv);
+                    itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+                }
+            });
+            document.getElementById('add-item-btn').addEventListener('click', (e) => {
+                 const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center space-x-2';
+                itemDiv.innerHTML = `<input type="text" placeholder="Nome" class="w-2/3 px-3 py-2 border rounded-lg text-sm"><input type="number" step="0.01" placeholder="Valor" class="personal-item-value w-1/3 px-3 py-2 border rounded-lg text-sm"><button type="button" class="remove-item-btn text-red-500 hover:text-red-700 font-bold">&times;</button>`;
+                document.getElementById('personal-items-list').appendChild(itemDiv);
+                itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+            });
+            document.querySelectorAll('.fixed-bill-btn').forEach(btn => btn.addEventListener('click', (e) => { closeModal(fixedBillsModal); openExpenseModal(e.target.dataset.bill, { defaultPayer: 'Gui', showDiscount: false }); }));
+            document.getElementById('expense-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
+                const date = document.getElementById('expense-date').value;
+                if (totalValue <= 0 || !date) return;
+                let personalItemsTotal = 0;
+                document.querySelectorAll('.personal-item-value').forEach(input => personalItemsTotal += parseFloat(input.value) || 0);
+                const valueToSplit = totalValue - personalItemsTotal;
+                if (valueToSplit < 0) return;
+                addTransaction({ category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItemsTotal, valueToSplit, date });
+                showAnimation(e.submitter, 'coin-animation', '$');
+                closeModal(expenseModal);
+            });
+            document.getElementById('task-type').addEventListener('change', (e) => { 
+                const isLouca = e.target.value === 'Louça';
+                const levelSelect = document.getElementById('task-level');
+                levelSelect.disabled = isLouca;
+            });
+            document.getElementById('task-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const doer = document.getElementById('task-doer').value;
+                const type = document.getElementById('task-type').value;
+                const isLouca = type === 'Louça';
+                const level = isLouca ? null : document.getElementById('task-level').value;
+                const points = isLouca ? taskPoints.types[type] : taskPoints.levels[level] * taskPoints.types[type];
+                taskScores[doer] += points;
+                taskHistory.push({ doer, type, level, points, date: new Date() });
+                if (neededTasks.includes(type)) {
+                    neededTasks = neededTasks.filter(t => t !== type);
+                    populateNeededTasks();
+                }
+                updateTaskUI();
+                triggerConfetti();
+                showAnimation(e.submitter, 'points-animation', `+${points} 🐱`);
+                closeModal(taskModal);
+            });
+            document.getElementById('settle-up-btn').addEventListener('click', (e) => {
+                const { difference, balanceAmount } = updateBalanceUI();
+                const summaryEl = document.getElementById('settlement-summary');
+                if (Math.abs(difference) < 0.01) summaryEl.textContent = "Não há pendências para acertar.";
+                else if (difference > 0) summaryEl.innerHTML = `Gui deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a João.`;
+                else summaryEl.innerHTML = `João deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a Gui.`;
+                openModal(settlementModal);
+            });
+            document.getElementById('confirm-settlement-btn').addEventListener('click', (e) => { 
+                resetAccounts(); 
+                showAnimation(e.target, 'coin-animation', '$');
+                closeModal(settlementModal); 
+            });
+
+            // Shopping List Listeners
+            document.getElementById('shopping-list-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('shopping-item-input');
+                if (input.value.trim()) {
+                    shoppingList.push({ text: input.value.trim(), checked: false });
+                    input.value = '';
+                    renderShoppingList();
+                }
+            });
+            document.getElementById('shopping-list').addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    const index = e.target.dataset.index;
+                    shoppingList[index].checked = e.target.checked;
+                    renderShoppingList();
+                }
+            });
+            document.getElementById('clear-shopping-list-btn').addEventListener('click', () => {
+                shoppingList = [];
+                renderShoppingList();
+            });
+
+            // Post-it Listeners
+            const postItText = document.getElementById('post-it-text-display');
+            const postItInput = document.getElementById('post-it-text-input');
+            document.getElementById('edit-post-it-btn').addEventListener('click', () => {
+                postItText.classList.add('hidden');
+                postItInput.classList.remove('hidden');
+                postItInput.value = postItText.textContent === 'Clique no pino para adicionar um lembrete...' ? '' : postItText.textContent;
+                postItInput.focus();
+            });
+            postItInput.addEventListener('blur', () => {
+                postItText.textContent = postItInput.value.trim() || 'Clique no pino para adicionar um lembrete...';
+                postItInput.classList.add('hidden');
+                postItText.classList.remove('hidden');
+            });
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
