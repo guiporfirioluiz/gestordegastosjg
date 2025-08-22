@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestão da Casa</title>
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Confetti JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -29,7 +28,7 @@
             pointer-events: none;
         }
         .points-animation {
-             color: #fb7185; /* rose-400 */
+            color: #fb7185; /* rose-400 */
         }
         .emoji-animation, .feedback-emoji {
             font-size: 1.75rem;
@@ -87,11 +86,14 @@
         .speech-bubble.positive:after {
             border-bottom-color: #ccfbf1; /* teal-100 */
         }
+        .balance-hidden {
+            filter: blur(5px);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-gray-800">
 
-    <!-- Container Principal -->
     <div class="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8">
         <div class="w-full max-w-md mx-auto">
 
@@ -102,10 +104,15 @@
 
             <section id="balance-section" class="mb-4 p-5 bg-white rounded-2xl shadow-md text-center">
                 <h2 class="text-lg font-semibold text-gray-700 mb-2">Balanço Geral</h2>
-                <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
+                <div class="flex items-center justify-center space-x-2">
+                    <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
+                    <button id="toggle-balance-visibility" class="text-gray-500 hover:text-gray-800">
+                        <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.668.124 2.454.354M7.5 7.5l12 12M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
             </section>
 
-            <!-- Seção Post-it -->
             <section id="post-it-section" class="mb-8 relative">
                 <div class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
                     <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
@@ -125,11 +132,10 @@
                 <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
                     <div data-category="Mercado" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Mercado</div></div>
                     <div id="fixed-bills-card" class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Contas Fixas</div></div>
-                    <div data-category="Compras Coletivas" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Compras Coletivas</div></div>
-                    <div data-category="Outro" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outro</div></div>
+                    <div data-category="Outras Compras" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outras Compras</div></div>
+                    <div data-category="Visão Geral" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Visão Geral</div></div>
                 </div>
 
-                <!-- Seção Lista de Compras -->
                 <section id="shopping-list-section" class="mb-8">
                     <h2 class="text-xl font-semibold text-gray-700 mb-4">Lista de Compras</h2>
                     <div class="bg-white rounded-2xl shadow-md p-5">
@@ -142,7 +148,6 @@
                     </div>
                 </section>
 
-                <!-- Seção de Gamificação -->
                 <section id="gamification-section">
                     <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
                     <div class="bg-white rounded-2xl shadow-md p-5">
@@ -150,10 +155,10 @@
                         <div id="monthly-award" class="text-center mb-4"></div>
                         <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
                         <div class="flex flex-col space-y-3">
-                             <div>
-                                <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
-                                <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
-                            </div>
+                                <div>
+                                    <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
+                                    <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
+                                </div>
                             <button id="add-task-btn" class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar Tarefa Feita</button>
                         </div>
                     </div>
@@ -172,14 +177,25 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="expense-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
             <div class="flex justify-between items-center mb-6"><h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
             <form id="expense-form" class="space-y-4">
+                <input type="hidden" id="transaction-id">
                 <div id="purchase-name-container" class="hidden"><label for="purchase-name" class="block text-sm font-medium text-gray-700 mb-1">Nome da Compra (Opcional)</label><input type="text" id="purchase-name" placeholder="Ex: Churrasco de sábado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
                 <div><label for="expense-date" class="block text-sm font-medium text-gray-700 mb-1">Data</label><input type="date" id="expense-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
-                <div><label for="payer" class="block text-sm font-medium text-gray-700 mb-1">Quem pagou?</label><select id="payer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"><option>João</option><option>Gui</option></select></div>
+                <div>
+                    <label for="payer" class="block text-sm font-medium text-gray-700 mb-1">Quem pagou?</label>
+                    <div class="relative">
+                        <select id="payer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 appearance-none bg-white">
+                            <option>João</option>
+                            <option>Gui</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
                 <div><label for="total-value" class="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label><input type="number" id="total-value" step="0.01" placeholder="150.50" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500" required></div>
                 <div id="discount-container" class="pt-2"><button type="button" id="toggle-discount-btn" class="w-full text-sm text-sky-600 hover:text-sky-800 font-medium py-2 rounded-lg bg-sky-50 hover:bg-sky-100 transition">Descontar itens pessoais</button><div id="discount-section" class="hidden space-y-3 mt-4"><div id="personal-items-list"></div><button type="button" id="add-item-btn" class="w-full text-sm text-teal-600 hover:text-teal-800 font-medium py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition">+ Adicionar item</button></div></div>
                 <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button type="submit" class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition">Confirmar</button></div>
@@ -204,16 +220,62 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
             <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-gray-800">Registrar Tarefa</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
             <form id="task-form" class="space-y-4">
-                <div><label for="task-doer" class="block text-sm font-medium text-gray-700 mb-1">Quem fez?</label><select id="task-doer" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option>João</option><option>Gui</option></select></div>
-                <div><label for="task-type" class="block text-sm font-medium text-gray-700 mb-1">Tarefa</label><select id="task-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option value="Louça">Louça</option><option value="Banheiro">Banheiro</option><option value="Cozinha">Cozinha</option><option value="Sala">Sala</option><option value="Escada">Escada</option></select></div>
-                <div id="task-level-container"><label for="task-level" class="block text-sm font-medium text-gray-700 mb-1">Nível de Limpeza</label><select id="task-level" class="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100"><option value="Varrida">Varrida</option><option value="Passada de Pano">Passada de Pano</option><option value="Lavada">Lavada</option></select></div>
+                <div>
+                    <label for="task-doer" class="block text-sm font-medium text-gray-700 mb-1">Quem fez?</label>
+                    <div class="relative">
+                        <select id="task-doer" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
+                            <option>João</option>
+                            <option>Gui</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="task-type" class="block text-sm font-medium text-gray-700 mb-1">Tarefa</label>
+                    <div class="relative">
+                        <select id="task-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
+                            <option value="Louça">Louça</option>
+                            <option value="Banheiro">Banheiro</option>
+                            <option value="Cozinha">Cozinha</option>
+                            <option value="Sala">Sala</option>
+                            <option value="Escada">Escada</option>
+                        </select>
+                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="task-level-container">
+                    <label for="task-level" class="block text-sm font-medium text-gray-700 mb-1">Nível de Limpeza</label>
+                    <div class="relative">
+                        <select id="task-level" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none disabled:bg-gray-100">
+                            <option value="Leve">Leve</option>
+                            <option value="Moderada">Moderada</option>
+                            <option value="Intensa">Intensa</option>
+                        </select>
+                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
                 <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button><button type="submit" class="px-4 py-2 bg-rose-400 text-white font-semibold rounded-lg">Registrar</button></div>
             </form>
         </div>
     </div>
+    <div id="overview-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Visão Geral do Mês</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <div>
+                <canvas id="expenses-chart"></canvas>
+                <p class="text-xs text-center text-gray-500 mt-4">Comparativo com meses anteriores ficará disponível em futuras versões.</p>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
-        // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -226,44 +288,31 @@
             appId: "1:404141341166:web:2a47d484f7ea01802376ff"
         };
 
-        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const appStateRef = doc(db, "gestaoDaCasa", "estadoCompartilhado");
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- ESTADO DA APLICAÇÃO (será preenchido pelo Firebase) ---
             let appState = {};
             let currentCategory = '';
+            let isBalanceVisible = false;
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const billColors = { 'Moradia': 'bg-sky-400', 'Internet': 'bg-violet-400', 'Luz': 'bg-amber-400', 'Água': 'bg-cyan-400' };
             const taskPoints = {
-                levels: { 'Varrida': 1, 'Passada de Pano': 2, 'Lavada': 3 },
+                levels: { 'Leve': 1, 'Moderada': 2, 'Intensa': 3 },
                 types: { 'Escada': 4, 'Sala': 4, 'Banheiro': 3, 'Cozinha': 4, 'Louça': 2 }
             };
-            const positiveFeedback = {
-                'Louça': ["A louça está brilhando!", "Essa pia nunca esteve tão limpa.", "Até que enfim, alguém lavou a louça!"], 
-                'Banheiro': ["Até que enfim lavaram o banheiro!", "O banheiro está um brinco!", "Cheirinho de limpeza no banheiro!"], 
-                'Cozinha': ["A cozinha está limpa! Pelo menos pelos próximos 10 minutos.", "Dá até gosto de cozinhar agora.", "Cozinha limpa, coração feliz."], 
-                'Sala': ["Nada como uma sala limpa!", "A sala está pronta para receber visitas.", "Finalmente um lugar decente para sentar."], 
-                'Escada': ["Ufa! A escada já estava pedindo por misericórdia.", "Agora dá pra subir sem medo de escorregar.", "A escada agradece a limpeza."]
-            };
-            const negativeFeedback = {
-                'Cozinha': ["Foi declarada calamidade pública na cozinha.", "A cozinha virou um ecossistema próprio.", "Que tipo de bactéria é essa sendo cultivada na geladeira?", "Gente, sério. Não vou nem fazer piada sobre a cozinha... Só limpem.", "A pia está pedindo socorro.", "Tem comida na geladeira com mais tempo de casa que vocês.", "A cozinha parece um cenário de guerra.", "O cheiro da cozinha está... exótico.", "Acho que vi um rato usando um prato de barco na pia."],
-                'Banheiro': ["Eu não entraria no banheiro se fosse você.", "O lado bom desse banheiro imundo é que nem dá para ver a cara de pau no espelho.", "Acho que o lixo do banheiro vai criar vida própria.", "O espelho do banheiro já não reflete mais nada.", "O vaso sanitário está em estado de calamidade.", "O banheiro virou uma sauna de germes.", "Acho que o banheiro está em quarentena.", "O banheiro está parecendo um pântano.", "O chuveiro está com mais limo que a Amazônia.", "O banheiro está um nojo, simples assim."],
-                'Sala': ["Malham tanto e não conseguem erguer uma vassoura pra limpar essa sala?", "O puppy estava prenho? Ah não é só uma BOLA ENORME DE PELOS no canto sala.", "A poeira na sala está competindo com o Saara.", "A sala virou uma extensão do quarto de vocês.", "Se a gente ligar o aspirador, ele engasga.", "A sala está um caos, parece que passou um furacão.", "A TV está com mais marcas de dedo que um celular.", "Repitam comigo: Chão sujo, casa suja.", "A sala está pedindo socorro."],
-                'Escada': ["Se alguém cair na escada a quantidade de pelo até amortece.", "A escada está mais perigosa que a montanha-russa.", "A escada virou um campo minado de sujeira.", "Cada degrau é uma nova surpresa... desagradável.", "A escada não vê uma vassoura desde o ano passado.", "A escada está com mais poeira que um museu.", "A escada está um perigo para a saúde pública.", "A escada está um lixo, literalmente.", "A escada está um convite para o tétano."],
-                'Geral': ["Estou adorando o experimento social vivendo no lixão da mãe lucinda.", "Na revolução das máquinas eu faço questão de começar eliminando a casa de vocês.", "A casa foi abandonada? Parece!", "Higiene mental começa com higiene pessoal, fica a dica meninos!"]
-            };
+            const positiveFeedback = { 'Louça': ["A louça está brilhando!", "Essa pia nunca esteve tão limpa.", "Até que enfim, alguém lavou a louça!"], 'Banheiro': ["Até que enfim lavaram o banheiro!", "O banheiro está um brinco!", "Cheirinho de limpeza no banheiro!"], 'Cozinha': ["A cozinha está limpa! Pelo menos pelos próximos 10 minutos.", "Dá até gosto de cozinhar agora.", "Cozinha limpa, coração feliz."], 'Sala': ["Nada como uma sala limpa!", "A sala está pronta para receber visitas.", "Finalmente um lugar decente para sentar."], 'Escada': ["Ufa! A escada já estava pedindo por misericórdia.", "Agora dá pra subir sem medo de escorregar.", "A escada agradece a limpeza."] };
+            const negativeFeedback = { 'Cozinha': ["Foi declarada calamidade pública na cozinha.", "A cozinha virou um ecossistema próprio.", "Que tipo de bactéria é essa sendo cultivada na geladeira?", "Gente, sério. Não vou nem fazer piada sobre a cozinha... Só limpem.", "A pia está pedindo socorro.", "Tem comida na geladeira com mais tempo de casa que vocês.", "A cozinha parece um cenário de guerra.", "O cheiro da cozinha está... exótico.", "Acho que vi um rato usando um prato de barco na pia."], 'Banheiro': ["Eu não entraria no banheiro se fosse você.", "O lado bom desse banheiro imundo é que nem dá para ver a cara de pau no espelho.", "Acho que o lixo do banheiro vai criar vida própria.", "O espelho do banheiro já não reflete mais nada.", "O vaso sanitário está em estado de calamidade.", "O banheiro virou uma sauna de germes.", "Acho que o banheiro está em quarentena.", "O banheiro está parecendo um pântano.", "O chuveiro está com mais limo que a Amazônia.", "O banheiro está um nojo, simples assim."], 'Sala': ["Malham tanto e não conseguem erguer uma vassoura pra limpar essa sala?", "O puppy estava prenho? Ah não é só uma BOLA ENORME DE PELOS no canto sala.", "A poeira na sala está competindo com o Saara.", "A sala virou uma extensão do quarto de vocês.", "Se a gente ligar o aspirador, ele engasga.", "A sala está um caos, parece que passou um furacão.", "A TV está com mais marcas de dedo que um celular.", "Repitam comigo: Chão sujo, casa suja.", "A sala está pedindo socorro."], 'Escada': ["Se alguém cair na escada a quantidade de pelo até amortece.", "A escada está mais perigosa que a montanha-russa.", "A escada virou um campo minado de sujeira.", "Cada degrau é uma nova surpresa... desagradável.", "A escada não vê uma vassoura desde o ano passado.", "A escada está com mais poeira que um museu.", "A escada está um perigo para a saúde pública.", "A escada está um lixo, literalmente.", "A escada está um convite para o tétano."], 'Geral': ["Estou adorando o experimento social vivendo no lixão da mãe lucinda.", "Na revolução das máquinas eu faço questão de começar eliminando a casa de vocês.", "A casa foi abandonada? Parece!", "Higiene mental começa com higiene pessoal, fica a dica meninos!"] };
 
-            // --- ELEMENTOS DO DOM ---
             const allModals = document.querySelectorAll('.modal-backdrop');
             const expenseModal = document.getElementById('expense-modal');
             const fixedBillsModal = document.getElementById('fixed-bills-modal');
             const settlementModal = document.getElementById('settlement-modal');
             const taskModal = document.getElementById('task-modal');
+            const overviewModal = document.getElementById('overview-modal');
+            let expensesChart = null; 
             
-            // --- FUNÇÕES DE MODAL ---
             const openModal = (modal) => {
                 modal.classList.remove('hidden');
                 setTimeout(() => {
@@ -282,28 +331,60 @@
                     if (modal.id === 'expense-modal') {
                         document.getElementById('personal-items-list').innerHTML = '';
                         document.getElementById('discount-section').classList.add('hidden');
+                        document.getElementById('transaction-id').value = '';
                     }
                 }, 300);
             };
+
             const openExpenseModal = (category, options = {}) => {
-                const { defaultPayer = 'João', showDiscount = true } = options;
+                const { defaultPayer = 'João', showDiscount = true, transaction = null } = options;
+                
+                const form = document.getElementById('expense-form');
+                form.reset(); 
                 currentCategory = category;
-                expenseModal.querySelector('#modal-title').textContent = `Adicionar Gasto de ${category}`;
-                document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('payer').value = defaultPayer;
+                const modalTitle = document.getElementById('modal-title');
+                const personalItemsList = document.getElementById('personal-items-list');
+                const discountSection = document.getElementById('discount-section');
+                personalItemsList.innerHTML = '';
+                discountSection.classList.add('hidden');
+
+                if (transaction) {
+                    modalTitle.textContent = `Editar Gasto de ${transaction.category}`;
+                    document.getElementById('transaction-id').value = transaction.id;
+                    document.getElementById('purchase-name').value = transaction.name || '';
+                    document.getElementById('expense-date').value = transaction.date;
+                    document.getElementById('payer').value = transaction.payer;
+                    document.getElementById('total-value').value = transaction.totalValue;
+                    const hasPersonalItems = transaction.personalItems && Object.values(transaction.personalItems).some(v => v > 0);
+                    if (hasPersonalItems) {
+                        discountSection.classList.remove('hidden');
+                        for (const owner in transaction.personalItems) {
+                             if (transaction.personalItems[owner] > 0) {
+                                addPersonalItemInput(transaction.personalItems[owner], owner);
+                             }
+                        }
+                    }
+                } else {
+                    modalTitle.textContent = `Adicionar Gasto de ${category}`;
+                    document.getElementById('transaction-id').value = '';
+                    document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('payer').value = defaultPayer;
+                }
+
                 document.getElementById('discount-container').style.display = showDiscount ? 'block' : 'none';
                 const purchaseNameContainer = document.getElementById('purchase-name-container');
-                purchaseNameContainer.style.display = (category === 'Compras Coletivas' || category === 'Outro') ? 'block' : 'none';
+                const currentDisplayCategory = transaction ? transaction.category : category;
+                purchaseNameContainer.style.display = (currentDisplayCategory === 'Outras Compras') ? 'block' : 'none';
+                
                 openModal(expenseModal);
             };
 
-            // --- FUNÇÕES DE UI ---
             const updateBalanceUI = () => {
                 let netBalance = { 'João': 0, 'Gui': 0 };
                 appState.transactions.forEach(tx => {
                     const payer = tx.payer;
                     const otherPerson = payer === 'João' ? 'Gui' : 'João';
-                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 }; // FIX: Default value
+                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 };
                     const personalItemsForPayer = personalItems[payer];
                     const personalItemsForOther = personalItems[otherPerson];
                     const sharedValue = tx.totalValue - personalItemsForPayer - personalItemsForOther;
@@ -313,17 +394,28 @@
                     netBalance[payer] += tx.totalValue - payerResponsibility;
                     netBalance[otherPerson] -= otherPersonResponsibility;
                 });
-
                 let balanceAmount = netBalance['João'];
-                if (balanceAmount > 0.001) {
-                    document.getElementById('balance-text').innerHTML = `Gui deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a João`;
-                } else if (balanceAmount < -0.001) {
-                    document.getElementById('balance-text').innerHTML = `João deve <span class="text-sky-700">R$ ${Math.abs(balanceAmount).toFixed(2)}</span> a Gui`;
+                const balanceTextEl = document.getElementById('balance-text');
+                const eyeOpenIcon = document.getElementById('eye-open-icon');
+                const eyeClosedIcon = document.getElementById('eye-closed-icon');
+                let textContent = '';
+                if (balanceAmount > 0.001) textContent = `Gui deve <span class="text-sky-700">R$ ${balanceAmount.toFixed(2)}</span> a João`;
+                else if (balanceAmount < -0.001) textContent = `João deve <span class="text-sky-700">R$ ${Math.abs(balanceAmount).toFixed(2)}</span> a Gui`;
+                else textContent = 'Tudo certo por aqui!';
+                if (isBalanceVisible) {
+                    balanceTextEl.innerHTML = textContent;
+                    balanceTextEl.classList.remove('balance-hidden');
+                    eyeOpenIcon.classList.remove('hidden');
+                    eyeClosedIcon.classList.add('hidden');
                 } else {
-                    document.getElementById('balance-text').textContent = 'Tudo certo por aqui!';
+                    balanceTextEl.innerHTML = textContent.replace(/R\$\s\d+\.\d{2}/, 'R$ ••••••');
+                    balanceTextEl.classList.add('balance-hidden');
+                    eyeOpenIcon.classList.add('hidden');
+                    eyeClosedIcon.classList.remove('hidden');
                 }
                 return { difference: balanceAmount, balanceAmount: Math.abs(balanceAmount) };
             };
+
             const updateHistoryUI = () => {
                 const historyList = document.getElementById('history-list');
                 historyList.innerHTML = '';
@@ -333,31 +425,24 @@
                 }
                 [...appState.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
                     const debtor = tx.payer === 'João' ? 'Gui' : 'João';
-                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 }; // FIX: Default value
+                    const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 };
                     const personalItemsForPayer = personalItems[tx.payer];
                     const personalItemsForOther = personalItems[debtor];
                     const sharedValue = tx.totalValue - personalItemsForPayer - personalItemsForOther;
                     const amountPerPerson = (sharedValue / 2) + personalItemsForOther;
-
                     const formattedDate = new Date(tx.date + 'T00:00:00').toLocaleDateString('pt-BR');
                     const purchaseNameHTML = tx.name ? `<p class="text-sm font-medium text-gray-600">${tx.name}</p>` : '';
                     let breakdownHTML = '';
                     if (personalItemsForPayer > 0 || personalItemsForOther > 0) {
-                        breakdownHTML = `
-                            <div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2">
-                                <p>Total: R$ ${tx.totalValue.toFixed(2)}</p>
-                                ${personalItemsForPayer > 0 ? `<p>Itens Pessoais (${tx.payer}): - R$ ${personalItemsForPayer.toFixed(2)}</p>` : ''}
-                                ${personalItemsForOther > 0 ? `<p>Itens Pessoais (${debtor}): - R$ ${personalItemsForOther.toFixed(2)}</p>` : ''}
-                                <p class="font-medium">A dividir: R$ ${sharedValue.toFixed(2)}</p>
-                            </div>
-                        `;
+                        breakdownHTML = `<div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2"><p>Total: R$ ${tx.totalValue.toFixed(2)}</p>${personalItemsForPayer > 0 ? `<p>Itens Pessoais (${tx.payer}): - R$ ${personalItemsForPayer.toFixed(2)}</p>` : ''}${personalItemsForOther > 0 ? `<p>Itens Pessoais (${debtor}): - R$ ${personalItemsForOther.toFixed(2)}</p>` : ''}<p class="font-medium">A dividir: R$ ${sharedValue.toFixed(2)}</p></div>`;
                     }
                     const historyItem = document.createElement('div');
                     historyItem.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200';
-                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}`;
+                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}<div class="flex justify-end items-center space-x-2 mt-2 pt-2 border-t border-gray-100"><button data-id="${tx.id}" class="edit-transaction-btn text-gray-400 hover:text-sky-600" title="Editar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"/></svg></button><button data-id="${tx.id}" class="delete-transaction-btn text-gray-400 hover:text-rose-600" title="Apagar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;
                     historyList.appendChild(historyItem);
                 });
             };
+
             const updateTaskUI = () => {
                 document.getElementById('scoreboard').innerHTML = `<div><p class="font-bold text-lg">João</p><p class="text-sky-700 font-semibold">${appState.taskScores['João']} 🐱</p></div><div><p class="font-bold text-lg">Gui</p><p class="text-sky-700 font-semibold">${appState.taskScores['Gui']} 🐱</p></div>`;
                 const award = document.getElementById('monthly-award');
@@ -368,17 +453,18 @@
                 taskHistoryList.innerHTML = '';
                 if (!appState.taskHistory || appState.taskHistory.length === 0) {
                     taskHistoryList.innerHTML = `<p class="text-center text-gray-500 py-4">Nenhuma tarefa registrada ainda.</p>`;
-                    return;
+                } else {
+                    [...appState.taskHistory].sort((a, b) => b.date - a.date).forEach(task => {
+                        const formattedDate = new Date(task.date).toLocaleDateString('pt-BR');
+                        const taskItem = document.createElement('div');
+                        taskItem.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-sm';
+                        taskItem.innerHTML = `<div class="flex justify-between items-center"><div><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="flex items-center space-x-3"><p class="font-bold text-rose-500">+${task.points} 🐱</p><button data-id="${task.id}" class="delete-task-btn text-gray-400 hover:text-rose-600" title="Apagar Tarefa"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div></div>`;
+                        taskHistoryList.appendChild(taskItem);
+                    });
                 }
-                [...appState.taskHistory].sort((a, b) => b.date - a.date).forEach(task => {
-                    const formattedDate = new Date(task.date).toLocaleDateString('pt-BR');
-                    const taskItem = document.createElement('div');
-                    taskItem.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-sm';
-                    taskItem.innerHTML = `<div class="flex justify-between items-center"><div><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><p class="font-bold text-rose-500">+${task.points} 🐱</p></div>`;
-                    taskHistoryList.appendChild(taskItem);
-                });
                 updateTaskFeedback();
             };
+
             const generateCalendar = (containerId, legendId, events, colors) => {
                 const container = document.getElementById(containerId);
                 const legendContainer = document.getElementById(legendId);
@@ -399,9 +485,8 @@
                 container.innerHTML = calendarHTML;
                 legendContainer.innerHTML = [...new Set(events.map(e => e.label))].map(label => `<div class="flex items-center"><div class="w-2 h-2 ${colors[label]} rounded-full mr-1.5"></div>${label}</div>`).join('');
             };
-            const triggerConfetti = () => {
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            };
+
+            const triggerConfetti = () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             const showAnimation = (targetElement, className, text = '') => {
                 const rect = targetElement.getBoundingClientRect();
                 const animationEl = document.createElement('div');
@@ -424,7 +509,6 @@
                             bubble.className = 'speech-bubble';
                             bubble.textContent = comment;
                             feedbackEl.appendChild(bubble);
-                            showFeedbackEmoji('negative', feedbackEl);
                         }
                     });
                     return;
@@ -439,18 +523,8 @@
                         bubble.className = 'speech-bubble positive';
                         bubble.textContent = comment;
                         feedbackEl.appendChild(bubble);
-                        showFeedbackEmoji('positive', feedbackEl);
                     }
                 }
-            };
-             const showFeedbackEmoji = (type, targetElement) => {
-                const negativeEmojis = ['🤢', '🤮', '😵'];
-                const positiveEmojis = ['✨', '🎉', '🥳'];
-                const emoji = type === 'negative'
-                    ? negativeEmojis[Math.floor(Math.random() * negativeEmojis.length)]
-                    : positiveEmojis[Math.floor(Math.random() * positiveEmojis.length)];
-                
-                showAnimation(targetElement, 'feedback-emoji', emoji);
             };
             const populateNeededTasks = () => {
                 const container = document.getElementById('needed-tasks-container');
@@ -484,72 +558,62 @@
                 appState.shoppingList.forEach((item, index) => {
                     const li = document.createElement('li');
                     li.className = 'flex items-center';
-                    li.innerHTML = `
-                        <label class="flex items-center w-full cursor-pointer">
-                            <input type="checkbox" data-index="${index}" class="h-4 w-4 rounded border-gray-300 text-sky-500 focus:ring-sky-500" ${item.checked ? 'checked' : ''}>
-                            <span class="ml-3 ${item.checked ? 'line-through text-gray-400' : ''}">${item.text}</span>
-                        </label>
-                    `;
+                    li.innerHTML = `<label class="flex items-center w-full cursor-pointer"><input type="checkbox" data-index="${index}" class="h-4 w-4 rounded border-gray-300 text-sky-500 focus:ring-sky-500" ${item.checked ? 'checked' : ''}><span class="ml-3 ${item.checked ? 'line-through text-gray-400' : ''}">${item.text}</span></label>`;
                     listEl.appendChild(li);
                 });
             };
-
-            // --- FUNÇÕES DE LÓGICA (com Firebase) ---
-            const resetAccounts = () => {
-                const newState = getInitialState();
-                setDoc(appStateRef, newState);
+            const renderOverviewChart = () => {
+                const ctx = document.getElementById('expenses-chart').getContext('2d');
+                const categories = { 'Mercado': 0, 'Contas Fixas': 0, 'Outras Compras': 0 };
+                appState.transactions.forEach(tx => {
+                    if (tx.category in categories) categories[tx.category] += tx.totalValue;
+                    else if (['Água', 'Luz', 'Internet', 'Moradia'].includes(tx.category)) categories['Contas Fixas'] += tx.totalValue;
+                });
+                const data = { labels: Object.keys(categories), datasets: [{ label: 'Gastos do Mês', data: Object.values(categories), backgroundColor: [ 'rgba(20, 184, 166, 0.7)', 'rgba(56, 189, 248, 0.7)', 'rgba(167, 139, 250, 0.7)' ], borderColor: [ 'rgb(15, 118, 110)', 'rgb(14, 116, 144)', 'rgb(124, 58, 237)' ], borderWidth: 1 }] };
+                if (expensesChart) expensesChart.destroy();
+                expensesChart = new Chart(ctx, { type: 'doughnut', data: data, options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Distribuição de Gastos' } } } });
             };
-            const getInitialState = () => {
-                const today = new Date().toISOString().split('T')[0];
-                return {
-                    transactions: [{ category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: today, personalItems: { 'João': 0, 'Gui': 0 }, name: '' }],
-                    taskHistory: [],
-                    neededTasks: [],
-                    shoppingList: [],
-                    taskScores: { 'João': 0, 'Gui': 0 },
-                    postItNote: 'Clique no pino para adicionar um lembrete...'
-                };
-            };
+            const resetAccounts = () => setDoc(appStateRef, getInitialState());
+            const getInitialState = () => ({
+                transactions: [{ id: 'moradia_inicial', category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: new Date().toISOString().split('T')[0], personalItems: { 'João': 0, 'Gui': 0 }, name: '' }],
+                taskHistory: [], neededTasks: [], shoppingList: [],
+                taskScores: { 'João': 0, 'Gui': 0 },
+                postItNote: 'Clique no pino para adicionar um lembrete...'
+            });
 
-            // --- EVENT LISTENERS ---
-            document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => openExpenseModal(card.dataset.category, { showDiscount: true })));
+            document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => {
+                const category = card.dataset.category;
+                if (category === 'Visão Geral') {
+                    openModal(overviewModal);
+                    renderOverviewChart();
+                } else {
+                    openExpenseModal(category, { showDiscount: true });
+                }
+            }));
             document.getElementById('fixed-bills-card').addEventListener('click', () => { 
-                const fixedBillEvents = appState.transactions
-                    .filter(tx => Object.keys(billColors).includes(tx.category))
-                    .map(tx => ({
-                        day: new Date(tx.date + 'T00:00:00').getDate(),
-                        label: tx.category,
-                        color: billColors[tx.category]
-                    }));
+                const fixedBillEvents = appState.transactions.filter(tx => Object.keys(billColors).includes(tx.category)).map(tx => ({ day: new Date(tx.date + 'T00:00:00').getDate(), label: tx.category, color: billColors[tx.category] }));
                 generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); 
                 openModal(fixedBillsModal); 
             });
-            document.getElementById('add-task-btn').addEventListener('click', (e) => openModal(taskModal));
+            document.getElementById('add-task-btn').addEventListener('click', () => openModal(task-modal));
             allModals.forEach(modal => {
                 modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
                 modal.querySelectorAll('.close-modal-btn, .cancel-btn').forEach(btn => btn.addEventListener('click', () => closeModal(modal)));
             });
-            document.getElementById('toggle-discount-btn').addEventListener('click', (e) => {
+            document.getElementById('toggle-discount-btn').addEventListener('click', () => {
                 const discountSection = document.getElementById('discount-section');
                 discountSection.classList.toggle('hidden');
-                if (!discountSection.classList.contains('hidden') && document.getElementById('personal-items-list').children.length === 0) {
-                    addPersonalItemInput();
-                }
+                if (!discountSection.classList.contains('hidden') && document.getElementById('personal-items-list').children.length === 0) addPersonalItemInput();
             });
-            const addPersonalItemInput = () => {
+            const addPersonalItemInput = (value = '', owner = 'João') => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'grid grid-cols-3 gap-2 items-center';
-                itemDiv.innerHTML = `
-                    <input type="number" step="0.01" placeholder="Valor" class="personal-item-value col-span-1 px-3 py-2 border rounded-lg text-sm">
-                    <select class="personal-item-owner col-span-2 px-3 py-2 border rounded-lg text-sm">
-                        <option value="João">Item de João</option>
-                        <option value="Gui">Item de Gui</option>
-                    </select>
-                `;
+                itemDiv.innerHTML = `<input type="number" step="0.01" placeholder="Valor" class="personal-item-value col-span-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${value}"><div class="relative col-span-2"><select class="personal-item-owner w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white appearance-none"><option value="João" ${owner === 'João' ? 'selected' : ''}>Item de João</option><option value="Gui" ${owner === 'Gui' ? 'selected' : ''}>Item de Gui</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>`;
                 document.getElementById('personal-items-list').appendChild(itemDiv);
             };
-            document.getElementById('add-item-btn').addEventListener('click', addPersonalItemInput);
+            document.getElementById('add-item-btn').addEventListener('click', () => addPersonalItemInput());
             document.querySelectorAll('.fixed-bill-btn').forEach(btn => btn.addEventListener('click', (e) => { closeModal(fixedBillsModal); openExpenseModal(e.target.dataset.bill, { defaultPayer: 'Gui', showDiscount: false }); }));
+            
             document.getElementById('expense-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
@@ -562,75 +626,70 @@
                     const value = parseFloat(itemDiv.querySelector('.personal-item-value').value) || 0;
                     personalItems[owner] += value;
                 });
-                const personalItemsTotal = personalItems['João'] + personalItems['Gui'];
                 
-                const newTransaction = { 
-                    category: currentCategory, 
-                    payer: document.getElementById('payer').value, 
-                    name: document.getElementById('purchase-name').value, 
-                    totalValue, 
-                    personalItems,
-                    valueToSplit: totalValue - personalItemsTotal, // Legacy, can be removed later
-                    personalItemsTotal, // Legacy
-                    date 
-                };
-                updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
+                const transactionId = document.getElementById('transaction-id').value;
+                // LOG DE DEPURAÇÃO
+                console.log('Formulário enviado. ID da transação:', transactionId || 'Nenhum (novo item)');
+
+                if (transactionId) {
+                    const updatedTransactions = appState.transactions.map(tx => {
+                        if (tx.id === transactionId) {
+                            // LOG DE DEPURAÇÃO
+                            console.log('Encontrada transação para atualizar:', tx);
+                            const updatedTx = { ...tx, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItems, date };
+                            console.log('Dados atualizados:', updatedTx);
+                            return updatedTx;
+                        }
+                        return tx;
+                    });
+                    // LOG DE DEPURAÇÃO
+                    console.log('Enviando array de transações atualizado para o Firebase:', updatedTransactions);
+                    updateDoc(appStateRef, { transactions: updatedTransactions });
+                } else {
+                    const newTransaction = { id: Date.now().toString(), category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItems, date };
+                    // LOG DE DEPURAÇÃO
+                    console.log('Enviando nova transação para o Firebase:', newTransaction);
+                    updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
+                }
                 
                 showAnimation(e.submitter, 'coin-animation', '$');
                 closeModal(expenseModal);
             });
-            document.getElementById('task-type').addEventListener('change', (e) => { 
-                const isLouca = e.target.value === 'Louça';
-                const levelSelect = document.getElementById('task-level');
-                levelSelect.disabled = isLouca;
-            });
+
+            document.getElementById('task-type').addEventListener('change', (e) => { document.getElementById('task-level').disabled = e.target.value === 'Louça'; });
             document.getElementById('task-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const doer = document.getElementById('task-doer').value;
                 const type = document.getElementById('task-type').value;
-                const isLouca = type === 'Louça';
-                const level = isLouca ? null : document.getElementById('task-level').value;
-                const points = isLouca ? taskPoints.types[type] : taskPoints.levels[level] * taskPoints.types[type];
-                
-                const newTask = { doer, type, level, points, date: new Date().toISOString() };
+                const level = type === 'Louça' ? null : document.getElementById('task-level').value;
+                const points = type === 'Louça' ? taskPoints.types[type] : taskPoints.levels[level] * taskPoints.types[type];
+                const newTask = { id: Date.now().toString(), doer, type, level, points, date: new Date().toISOString() };
                 const newScores = {...appState.taskScores};
                 newScores[doer] += points;
-                let newNeeded = [...appState.neededTasks];
-                if (newNeeded.includes(type)) {
-                    newNeeded = newNeeded.filter(t => t !== type);
-                }
-
-                updateDoc(appStateRef, { 
-                    taskHistory: [...appState.taskHistory, newTask],
-                    taskScores: newScores,
-                    neededTasks: newNeeded
-                });
-
+                let newNeeded = appState.neededTasks.filter(t => t !== type);
+                updateDoc(appStateRef, { taskHistory: [...appState.taskHistory, newTask], taskScores: newScores, neededTasks: newNeeded });
                 triggerConfetti();
                 showAnimation(e.submitter, 'points-animation', `+${points} 🐱`);
                 closeModal(taskModal);
             });
-            document.getElementById('settle-up-btn').addEventListener('click', (e) => {
+            document.getElementById('settle-up-btn').addEventListener('click', () => {
                 const { difference, balanceAmount } = updateBalanceUI();
                 const summaryEl = document.getElementById('settlement-summary');
                 if (Math.abs(difference) < 0.01) summaryEl.textContent = "Não há pendências para acertar.";
                 else if (difference > 0) summaryEl.innerHTML = `Gui deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a João.`;
                 else summaryEl.innerHTML = `João deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a Gui.`;
-                openModal(settlementModal);
+                openModal(settlement-modal);
             });
             document.getElementById('confirm-settlement-btn').addEventListener('click', (e) => { 
                 resetAccounts(); 
                 showAnimation(e.target, 'coin-animation', '$');
                 closeModal(settlementModal); 
             });
-
-            // Shopping List Listeners
             document.getElementById('shopping-list-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const input = document.getElementById('shopping-item-input');
                 if (input.value.trim()) {
-                    const newItem = { text: input.value.trim(), checked: false };
-                    updateDoc(appStateRef, { shoppingList: [...appState.shoppingList, newItem] });
+                    updateDoc(appStateRef, { shoppingList: [...appState.shoppingList, { text: input.value.trim(), checked: false }] });
                     input.value = '';
                 }
             });
@@ -642,11 +701,8 @@
                     updateDoc(appStateRef, { shoppingList: newShoppingList });
                 }
             });
-            document.getElementById('clear-shopping-list-btn').addEventListener('click', () => {
-                updateDoc(appStateRef, { shoppingList: [] });
-            });
+            document.getElementById('clear-shopping-list-btn').addEventListener('click', () => updateDoc(appStateRef, { shoppingList: [] }) );
 
-            // Post-it Listeners
             const postItText = document.getElementById('post-it-text-display');
             const postItInput = document.getElementById('post-it-text-input');
             document.getElementById('edit-post-it-btn').addEventListener('click', () => {
@@ -662,26 +718,71 @@
                 postItText.classList.remove('hidden');
             });
 
-            // --- INICIALIZAÇÃO E LISTENER DO FIREBASE ---
+            document.getElementById('toggle-balance-visibility').addEventListener('click', () => {
+                isBalanceVisible = !isBalanceVisible;
+                updateBalanceUI();
+            });
+
+            document.getElementById('history-list').addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-transaction-btn');
+                const deleteBtn = e.target.closest('.delete-transaction-btn');
+                if (editBtn) {
+                    const transactionId = editBtn.dataset.id;
+                    const transactionToEdit = appState.transactions.find(tx => tx.id === transactionId);
+                    if (transactionToEdit) {
+                        // LOG DE DEPURAÇÃO
+                        console.log('Botão de editar clicado. Abrindo modal para a transação:', transactionToEdit);
+                        openExpenseModal(transactionToEdit.category, { transaction: transactionToEdit, showDiscount: true });
+                    }
+                }
+                if (deleteBtn) {
+                    if (confirm('Tem certeza que deseja apagar este gasto?')) {
+                        const transactionId = deleteBtn.dataset.id;
+                        const updatedTransactions = appState.transactions.filter(tx => tx.id !== transactionId);
+                        updateDoc(appStateRef, { transactions: updatedTransactions });
+                    }
+                }
+            });
+            document.getElementById('task-history-list').addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.delete-task-btn');
+                if (deleteBtn) {
+                    if (confirm('Tem certeza que deseja apagar esta tarefa? Esta ação irá remover os pontos ganhos.')) {
+                        const taskId = deleteBtn.dataset.id;
+                        const taskToDelete = appState.taskHistory.find(t => t.id === taskId);
+                        if (taskToDelete) {
+                            const updatedHistory = appState.taskHistory.filter(t => t.id !== taskId);
+                            const updatedScores = { ...appState.taskScores };
+                            updatedScores[taskToDelete.doer] -= taskToDelete.points;
+                            updateDoc(appStateRef, { taskHistory: updatedHistory, taskScores: updatedScores });
+                        }
+                    }
+                }
+            });
+
             onSnapshot(appStateRef, (doc) => {
                 if (doc.exists()) {
                     appState = doc.data();
-                    // Convertendo timestamps do Firestore para datas JS, se necessário
+                    appState.transactions = appState.transactions || [];
+                    appState.taskHistory = appState.taskHistory || [];
+                    appState.neededTasks = appState.neededTasks || [];
+                    appState.shoppingList = appState.shoppingList || [];
+                    appState.taskScores = appState.taskScores || { 'João': 0, 'Gui': 0 };
+
                     if (appState.taskHistory) {
-                        appState.taskHistory = appState.taskHistory.map(t => ({...t, date: new Date(t.date)}));
+                        appState.taskHistory = appState.taskHistory.map(t => {
+                            const date = t.date && typeof t.date.toDate === 'function' ? t.date.toDate() : new Date(t.date);
+                            return {...t, date };
+                        });
                     }
                 } else {
-                    // Se o documento não existe, cria um estado inicial
                     appState = getInitialState();
                     setDoc(appStateRef, appState);
-                    return; // Retorna para evitar renderizar com estado vazio
+                    return;
                 }
                 
-                // Atualiza toda a UI com os novos dados
                 const today = new Date();
                 const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
                 document.getElementById('settlement-date-text').textContent = `Próximo acerto dia 15 de ${monthNames[nextMonth.getMonth()]}`;
-                
                 postItText.textContent = appState.postItNote || 'Clique no pino para adicionar um lembrete...';
                 
                 updateBalanceUI();
