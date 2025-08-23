@@ -90,109 +90,144 @@
             filter: blur(5px);
             cursor: pointer;
         }
+
+        /* --- ESTILOS PARA ABAS --- */
+        #tab-container {
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Para iOS */
+        }
+        #tab-container::-webkit-scrollbar {
+            display: none; /* Esconde a barra de rolagem */
+        }
+        .tab-page {
+            scroll-snap-align: start;
+            position: relative; /* Garante o contexto de empilhamento para corrigir o bug do pino */
+            background-color: white; /* Garante que a aba não seja transparente */
+            min-height: 50vh; /* Garante uma altura mínima para evitar espaços em branco */
+        }
+        .tab-btn {
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #64748b; /* slate-500 */
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .tab-btn.active {
+            color: #fff;
+            background-color: #38bdf8; /* sky-400 */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
 
-    <div class="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8">
-        <div class="w-full max-w-md mx-auto">
+    <div class="flex flex-col items-center">
+        <div class="w-full max-w-md mx-auto p-4 sm:p-6 lg:p-8">
 
-            <header class="mb-8 text-center">
+            <header class="mb-4 text-center">
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestão da Casa</h1>
                 <p id="settlement-date-text" class="text-gray-500"></p>
-                <!-- VÍDEO ADICIONADO AQUI -->
                 <div class="my-4">
-                    <video 
-                        class="w-48 h-48 mx-auto rounded-2xl object-cover" 
-                        autoplay 
-                        loop 
-                        muted 
-                        playsinline
-                        src="https://github.com/guiporfirioluiz/gestordegastosjg/raw/refs/heads/main/CAtinho.mp4">
-                        <!-- 
-                            IMPORTANTE: Substitua 'USUARIO' e 'REPOSITORIO' pelo seu nome de usuário 
-                            e nome do repositório no GitHub para o vídeo funcionar.
-                            O link deve ser para o arquivo "raw" (bruto).
-                        -->
-                    </video>
+                    <video id="contas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover" autoplay loop muted playsinline src="https://github.com/guiporfirioluiz/gestordegastosjg/raw/refs/heads/main/CAtinho.mp4"></video>
+                    <video id="tarefas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover hidden" autoplay loop muted playsinline src="https://github.com/guiporfirioluiz/gestordegastosjg/raw/refs/heads/main/Kodico.mp4"></video>
                 </div>
             </header>
 
-            <section id="balance-section" class="mb-4 p-5 bg-white rounded-2xl shadow-md text-center">
-                <h2 class="text-lg font-semibold text-gray-700 mb-2">Balanço Geral</h2>
-                <div class="flex items-center justify-center space-x-2">
-                    <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
-                    <button id="toggle-balance-visibility" class="text-gray-500 hover:text-gray-800">
-                        <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.668.124 2.454.354M7.5 7.5l12 12M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    </button>
+            <!-- NAVEGAÇÃO DAS ABAS -->
+            <nav id="tab-nav" class="flex justify-center items-center space-x-3 mb-6">
+                <div class="flex justify-center space-x-3">
+                    <button data-tab="contas" class="tab-btn active">Contas</button>
+                    <button data-tab="tarefas" class="tab-btn">Tarefas</button>
                 </div>
-            </section>
+            </nav>
 
-            <section id="post-it-section" class="mb-8 relative">
-                <div class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
-                    <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
-                    <textarea id="post-it-text-input" class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700" placeholder="Digite seu lembrete..."></textarea>
-                </div>
-                <button id="edit-post-it-btn" class="absolute -top-3 -right-2 w-8 h-8 bg-red-500 rounded-full shadow-lg transform -rotate-45 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                    <div class="w-4 h-4 bg-red-300 rounded-full"></div>
-                </button>
-            </section>
-            
-            <div class="mb-8 text-center">
-                <button id="settle-up-btn" class="w-full sm:w-auto px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Acerto de Contas</button>
-            </div>
-
-            <main>
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Gastos</h2>
-                <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
-                    <div data-category="Mercado" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Mercado</div></div>
-                    <div id="fixed-bills-card" class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Contas Fixas</div></div>
-                    <div data-category="Outras Compras" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outras Compras</div></div>
-                    <div data-category="Visão Geral" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Visão Geral</div></div>
-                </div>
-
-                <section id="shopping-list-section" class="mb-8">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Lista de Compras</h2>
-                    <div class="bg-white rounded-2xl shadow-md p-5">
-                        <form id="shopping-list-form" class="flex space-x-2 mb-4">
-                            <input type="text" id="shopping-item-input" placeholder="Adicionar item..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
-                            <button type="submit" class="px-4 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg hover:bg-sky-400 transition">+</button>
-                        </form>
-                        <ul id="shopping-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
-                        <button id="clear-shopping-list-btn" class="w-full mt-4 text-sm text-rose-500 hover:text-rose-700">Limpar Lista</button>
-                    </div>
-                </section>
-
-                <section id="gamification-section">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
-                    <div class="bg-white rounded-2xl shadow-md p-5">
-                        <div id="scoreboard" class="flex justify-around items-center text-center mb-4"></div>
-                        <div id="monthly-award" class="text-center mb-4"></div>
-                        <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
-                        <div class="flex flex-col space-y-3">
-                                <div>
-                                    <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
-                                    <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
-                                </div>
-                            <button id="add-task-btn" class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar Tarefa Feita</button>
+            <!-- CONTAINER DAS ABAS -->
+            <div id="tab-container" class="flex w-full overflow-x-auto">
+                <!-- ABA DE CONTAS -->
+                <div id="contas-page" class="w-full flex-shrink-0 tab-page">
+                    <section id="balance-section" class="mb-4 p-5 bg-white rounded-2xl shadow-md text-center">
+                        <h2 class="text-lg font-semibold text-gray-700 mb-2">Balanço Geral</h2>
+                        <div class="flex items-center justify-center space-x-2">
+                            <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
+                            <button id="toggle-balance-visibility" class="text-gray-500 hover:text-gray-800">
+                                <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.668.124 2.454.354M7.5 7.5l12 12M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </button>
                         </div>
+                    </section>
+                    
+                    <div class="mb-8 text-center">
+                        <button id="settle-up-btn" class="w-full sm:w-auto px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Acerto de Contas</button>
                     </div>
-                </section>
 
-                <section id="history-section" class="mt-8">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Transações</h3>
-                    <div id="history-list" class="space-y-3"></div>
-                </section>
-                
-                <section id="task-history-section" class="mt-8">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Tarefas</h3>
-                    <div id="task-history-list" class="space-y-3"></div>
-                </section>
-            </main>
+                    <section id="post-it-section" class="mb-8 relative">
+                        <div class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
+                            <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
+                            <textarea id="post-it-text-input" class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700" placeholder="Digite seu lembrete..."></textarea>
+                        </div>
+                        <button id="edit-post-it-btn" class="absolute -top-3 right-0 w-8 h-8 bg-red-500 rounded-full shadow-lg transform -rotate-45 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                            <div class="w-4 h-4 bg-red-300 rounded-full"></div>
+                        </button>
+                    </section>
+
+                    <main>
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Gastos</h2>
+                        <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
+                            <div data-category="Mercado" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Mercado</div></div>
+                            <div id="fixed-bills-card" class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Contas Fixas</div></div>
+                            <div data-category="Outras Compras" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outras Compras</div></div>
+                            <div data-category="Visão Geral" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Visão Geral</div></div>
+                        </div>
+
+                        <section id="shopping-list-section" class="mb-8">
+                            <h2 class="text-xl font-semibold text-gray-700 mb-4">Lista de Compras</h2>
+                            <div class="bg-white rounded-2xl shadow-md p-5">
+                                <form id="shopping-list-form" class="flex space-x-2 mb-4">
+                                    <input type="text" id="shopping-item-input" placeholder="Adicionar item..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                                    <button type="submit" class="px-4 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg hover:bg-sky-400 transition">+</button>
+                                </form>
+                                <ul id="shopping-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+                                <button id="clear-shopping-list-btn" class="w-full mt-4 text-sm text-rose-500 hover:text-rose-700">Limpar Lista</button>
+                            </div>
+                        </section>
+
+                        <section id="history-section" class="mt-8">
+                            <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Transações</h3>
+                            <div id="history-list" class="space-y-3"></div>
+                        </section>
+                    </main>
+                </div>
+
+                <!-- ABA DE TAREFAS -->
+                <div id="tarefas-page" class="w-full flex-shrink-0 tab-page">
+                     <section id="gamification-section">
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
+                        <div class="bg-white rounded-2xl shadow-md p-5">
+                            <div id="scoreboard" class="flex justify-around items-center text-center mb-4"></div>
+                            <div id="monthly-award" class="text-center mb-4"></div>
+                            <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
+                            <div class="flex flex-col space-y-3">
+                                    <div>
+                                        <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
+                                        <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
+                                    </div>
+                                <button id="add-task-btn" class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar Tarefa Feita</button>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section id="task-history-section" class="mt-8">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Tarefas</h3>
+                        <div id="task-history-list" class="space-y-3"></div>
+                    </section>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- MODAIS (permanecem os mesmos) -->
     <div id="expense-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
             <div class="flex justify-between items-center mb-6"><h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
@@ -454,7 +489,7 @@
                     }
                     const historyItem = document.createElement('div');
                     historyItem.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200';
-                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}<div class="flex justify-end items-center space-x-2 mt-2 pt-2 border-t border-gray-100"><button data-id="${tx.id}" class="edit-transaction-btn text-gray-400 hover:text-sky-600" title="Editar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"/></svg></button><button data-id="${tx.id}" class="delete-transaction-btn text-gray-400 hover:text-rose-600" title="Apagar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;
+                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div class="min-w-0 mr-2"><p class="font-semibold text-gray-800 truncate">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right flex-shrink-0"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}<div class="flex justify-end items-center space-x-2 mt-2 pt-2 border-t border-gray-100"><button data-id="${tx.id}" class="edit-transaction-btn text-gray-400 hover:text-sky-600" title="Editar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"/></svg></button><button data-id="${tx.id}" class="delete-transaction-btn text-gray-400 hover:text-rose-600" title="Apagar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;
                     historyList.appendChild(historyItem);
                 });
             };
@@ -474,7 +509,7 @@
                         const formattedDate = new Date(task.date).toLocaleDateString('pt-BR');
                         const taskItem = document.createElement('div');
                         taskItem.className = 'bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-sm';
-                        taskItem.innerHTML = `<div class="flex justify-between items-center"><div><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="flex items-center space-x-3"><p class="font-bold text-rose-500">+${task.points} 🐱</p><button data-id="${task.id}" class="delete-task-btn text-gray-400 hover:text-rose-600" title="Apagar Tarefa"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div></div>`;
+                        taskItem.innerHTML = `<div class="flex justify-between items-center"><div class="min-w-0 mr-2"><p><span class="font-semibold">${task.doer}</span> limpou <span class="font-medium">${task.type}${task.level ? ` (${task.level})` : ''}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="flex items-center space-x-3 flex-shrink-0"><p class="font-bold text-rose-500">+${task.points} 🐱</p><button data-id="${task.id}" class="delete-task-btn text-gray-400 hover:text-rose-600" title="Apagar Tarefa"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div></div>`;
                         taskHistoryList.appendChild(taskItem);
                     });
                 }
@@ -596,6 +631,51 @@
                 taskScores: { 'João': 0, 'Gui': 0 },
                 postItNote: 'Clique no pino para adicionar um lembrete...'
             });
+
+            // --- LÓGICA DAS ABAS ---
+            const tabContainer = document.getElementById('tab-container');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const contasVideo = document.getElementById('contas-video');
+            const tarefasVideo = document.getElementById('tarefas-video');
+            
+            const updateTabUI = (tabName) => {
+                tabButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabName);
+                });
+                contasVideo.classList.toggle('hidden', tabName !== 'contas');
+                tarefasVideo.classList.toggle('hidden', tabName !== 'tarefas');
+            };
+
+            const setActiveTab = (tabName) => {
+                updateTabUI(tabName);
+                const targetPage = document.getElementById(`${tabName}-page`);
+                if (targetPage) {
+                    tabContainer.scrollTo({
+                        left: targetPage.offsetLeft,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setActiveTab(button.dataset.tab);
+                });
+            });
+
+            let scrollTimeout;
+            tabContainer.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const scrollLeft = tabContainer.scrollLeft;
+                    const containerWidth = tabContainer.offsetWidth;
+                    const activeTabName = (scrollLeft < containerWidth / 2) ? 'contas' : 'tarefas';
+                    updateTabUI(activeTabName);
+                }, 150);
+            }, { passive: true });
+
+
+            // --- FIM DA LÓGICA DAS ABAS ---
 
             document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => {
                 const category = card.dataset.category;
