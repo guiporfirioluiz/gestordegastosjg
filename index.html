@@ -243,8 +243,8 @@
                             <option value="Escada">Escada</option>
                         </select>
                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                        </div>
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                         </div>
                     </div>
                 </div>
                 <div id="task-level-container">
@@ -256,8 +256,8 @@
                             <option value="Intensa">Intensa</option>
                         </select>
                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                        </div>
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                         </div>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button><button type="submit" class="px-4 py-2 bg-rose-400 text-white font-semibold rounded-lg">Registrar</button></div>
@@ -360,7 +360,7 @@
                         discountSection.classList.remove('hidden');
                         for (const owner in transaction.personalItems) {
                              if (transaction.personalItems[owner] > 0) {
-                                addPersonalItemInput(transaction.personalItems[owner], owner);
+                                 addPersonalItemInput(transaction.personalItems[owner], owner);
                              }
                         }
                     }
@@ -595,7 +595,7 @@
                 generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); 
                 openModal(fixedBillsModal); 
             });
-            document.getElementById('add-task-btn').addEventListener('click', () => openModal(task-modal));
+            document.getElementById('add-task-btn').addEventListener('click', () => openModal(taskModal));
             allModals.forEach(modal => {
                 modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
                 modal.querySelectorAll('.close-modal-btn, .cancel-btn').forEach(btn => btn.addEventListener('click', () => closeModal(modal)));
@@ -678,7 +678,7 @@
                 if (Math.abs(difference) < 0.01) summaryEl.textContent = "Não há pendências para acertar.";
                 else if (difference > 0) summaryEl.innerHTML = `Gui deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a João.`;
                 else summaryEl.innerHTML = `João deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a Gui.`;
-                openModal(settlement-modal);
+                openModal(settlementModal);
             });
             document.getElementById('confirm-settlement-btn').addEventListener('click', (e) => { 
                 resetAccounts(); 
