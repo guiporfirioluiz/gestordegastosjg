@@ -119,6 +119,11 @@
             background-color: #38bdf8; /* sky-400 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+        
+        /* --- ESTILOS ATUALIZADOS DO PINO --- */
+        #edit-post-it-btn {
+            background-image: radial-gradient(circle at 30% 30%, #ff7a7a, #ef4444);
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
@@ -167,7 +172,7 @@
                             <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
                             <textarea id="post-it-text-input" class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700" placeholder="Digite seu lembrete..."></textarea>
                         </div>
-                        <button id="edit-post-it-btn" class="absolute -top-3 right-0 w-8 h-8 bg-red-500 rounded-full shadow-lg transform -rotate-45 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                        <button id="edit-post-it-btn" class="absolute -top-3 right-1 w-8 h-8 rounded-full shadow-lg transform -rotate-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
                             <div class="w-4 h-4 bg-red-300 rounded-full"></div>
                         </button>
                     </section>
@@ -205,7 +210,7 @@
                      <section id="gamification-section">
                         <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
                         <div class="bg-white rounded-2xl shadow-md p-5">
-                            <div id="scoreboard" class="flex justify-around items-center text-center mb-4"></div>
+                            <div id="scoreboard" class="flex justify-between items-center text-center mb-4"></div>
                             <div id="monthly-award" class="text-center mb-4"></div>
                             <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
                             <div class="flex flex-col space-y-3">
@@ -353,6 +358,14 @@
                 levels: { 'Leve': 1, 'Moderada': 2, 'Intensa': 3 },
                 types: { 'Escada': 4, 'Sala': 4, 'Banheiro': 3, 'Cozinha': 4, 'Louça': 2 }
             };
+            const profileImages = {
+                'João': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/J01.png',
+                'Gui': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/G1.png'
+            };
+            const awardImages = {
+                'João': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/mes-joao2.png',
+                'Gui': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/mes-gui2.png'
+            };
             const positiveFeedback = { 'Louça': ["A louça está brilhando!", "Essa pia nunca esteve tão limpa.", "Até que enfim, alguém lavou a louça!"], 'Banheiro': ["Até que enfim lavaram o banheiro!", "O banheiro está um brinco!", "Cheirinho de limpeza no banheiro!"], 'Cozinha': ["A cozinha está limpa! Pelo menos pelos próximos 10 minutos.", "Dá até gosto de cozinhar agora.", "Cozinha limpa, coração feliz."], 'Sala': ["Nada como uma sala limpa!", "A sala está pronta para receber visitas.", "Finalmente um lugar decente para sentar."], 'Escada': ["Ufa! A escada já estava pedindo por misericórdia.", "Agora dá pra subir sem medo de escorregar.", "A escada agradece a limpeza."] };
             const negativeFeedback = { 'Cozinha': ["Foi declarada calamidade pública na cozinha.", "A cozinha virou um ecossistema próprio.", "Que tipo de bactéria é essa sendo cultivada na geladeira?", "Gente, sério. Não vou nem fazer piada sobre a cozinha... Só limpem.", "A pia está pedindo socorro.", "Tem comida na geladeira com mais tempo de casa que vocês.", "A cozinha parece um cenário de guerra.", "O cheiro da cozinha está... exótico.", "Acho que vi um rato usando um prato de barco na pia."], 'Banheiro': ["Eu não entraria no banheiro se fosse você.", "O lado bom desse banheiro imundo é que nem dá para ver a cara de pau no espelho.", "Acho que o lixo do banheiro vai criar vida própria.", "O espelho do banheiro já não reflete mais nada.", "O vaso sanitário está em estado de calamidade.", "O banheiro virou uma sauna de germes.", "Acho que o banheiro está em quarentena.", "O banheiro está parecendo um pântano.", "O chuveiro está com mais limo que a Amazônia.", "O banheiro está um nojo, simples assim."], 'Sala': ["Malham tanto e não conseguem erguer uma vassoura pra limpar essa sala?", "O puppy estava prenho? Ah não é só uma BOLA ENORME DE PELOS no canto sala.", "A poeira na sala está competindo com o Saara.", "A sala virou uma extensão do quarto de vocês.", "Se a gente ligar o aspirador, ele engasga.", "A sala está um caos, parece que passou um furacão.", "A TV está com mais marcas de dedo que um celular.", "Repitam comigo: Chão sujo, casa suja.", "A sala está pedindo socorro."], 'Escada': ["Se alguém cair na escada a quantidade de pelo até amortece.", "A escada está mais perigosa que a montanha-russa.", "A escada virou um campo minado de sujeira.", "Cada degrau é uma nova surpresa... desagradável.", "A escada não vê uma vassoura desde o ano passado.", "A escada está com mais poeira que um museu.", "A escada está um perigo para a saúde pública.", "A escada está um lixo, literalmente.", "A escada está um convite para o tétano."], 'Geral': ["Estou adorando o experimento social vivendo no lixão da mãe lucinda.", "Na revolução das máquinas eu faço questão de começar eliminando a casa de vocês.", "A casa foi abandonada? Parece!", "Higiene mental começa com higiene pessoal, fica a dica meninos!"] };
 
@@ -495,11 +508,56 @@
             };
 
             const updateTaskUI = () => {
-                document.getElementById('scoreboard').innerHTML = `<div><p class="font-bold text-lg">João</p><p class="text-sky-700 font-semibold">${appState.taskScores['João']} 🐱</p></div><div><p class="font-bold text-lg">Gui</p><p class="text-sky-700 font-semibold">${appState.taskScores['Gui']} 🐱</p></div>`;
+                const scoreboard = document.getElementById('scoreboard');
                 const award = document.getElementById('monthly-award');
-                if (appState.taskScores['João'] > appState.taskScores['Gui']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">João</span></p>`;
-                else if (appState.taskScores['Gui'] > appState.taskScores['João']) award.innerHTML = `<p class="text-sm text-gray-600">🏆 Morador do Mês: <span class="font-bold text-sky-800">Gui</span></p>`;
-                else award.innerHTML = `<p class="text-sm text-gray-500">🏆 Empate no prêmio de Morador do Mês!</p>`;
+
+                scoreboard.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <img src="${profileImages['João']}" class="w-12 h-12 rounded-full border-2 border-sky-200 object-cover">
+                        <div>
+                            <p class="font-bold text-lg text-left">João</p>
+                            <p class="text-sky-700 font-semibold">${appState.taskScores['João']} 🐱</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div>
+                            <p class="font-bold text-lg text-right">Gui</p>
+                            <p class="text-sky-700 font-semibold">${appState.taskScores['Gui']} 🐱</p>
+                        </div>
+                        <img src="${profileImages['Gui']}" class="w-12 h-12 rounded-full border-2 border-sky-200 object-cover">
+                    </div>`;
+
+                let winner = null;
+                if (appState.taskScores['João'] > appState.taskScores['Gui']) {
+                    winner = 'João';
+                } else if (appState.taskScores['Gui'] > appState.taskScores['João']) {
+                    winner = 'Gui';
+                }
+
+                if (winner) {
+                    award.innerHTML = `
+                        <div class="mt-4 flex flex-col items-center">
+                            <img id="award-image" src="${awardImages[winner]}" class="w-40 h-40 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-transform">
+                            <p class="mt-2 text-lg font-bold text-sky-500">Morador do mês!</p>
+                        </div>`;
+                    
+                    const awardImage = document.getElementById('award-image');
+                    if (awardImage) {
+                        awardImage.addEventListener('click', (e) => {
+                            const rect = e.target.getBoundingClientRect();
+                            const x = (rect.left + rect.right) / 2 / window.innerWidth;
+                            const y = (rect.top + rect.bottom) / 2 / window.innerHeight;
+                            confetti({
+                                particleCount: 150,
+                                spread: 90,
+                                origin: { x, y }
+                            });
+                        });
+                    }
+                } else {
+                    award.innerHTML = `<p class="text-lg font-semibold text-gray-500 mt-8">🏆 Empate no prêmio de Morador do Mês!</p>`;
+                }
+
                 const taskHistoryList = document.getElementById('task-history-list');
                 taskHistoryList.innerHTML = '';
                 if (!appState.taskHistory || appState.taskHistory.length === 0) {
