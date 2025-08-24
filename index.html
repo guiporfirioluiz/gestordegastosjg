@@ -145,8 +145,8 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestão da Casa</h1>
                 <p id="settlement-date-text" class="text-gray-500"></p>
                 <div class="my-4">
-                    <video id="contas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover" autoplay loop muted playsinline src="https://github.com/guiporfirioluiz/gestordegastosjg/raw/refs/heads/main/CAtinho.mp4"></video>
-                    <video id="tarefas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover hidden" autoplay loop muted playsinline src="https://github.com/guiporfirioluiz/gestordegastosjg/raw/refs/heads/main/Kodico.mp4"></video>
+                    <video id="contas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover" autoplay loop muted playsinline src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/CAtinho.mp4"></video>
+                    <video id="tarefas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover hidden" autoplay loop muted playsinline src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/Kodico.mp4"></video>
                 </div>
             </header>
 
@@ -372,9 +372,9 @@
                 'João': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/J01.png',
                 'Gui': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/G1.png'
             };
-            const awardImages = {
-                'João': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/mes-joao2.png',
-                'Gui': 'https://github.com/guiporfirioluiz/gestordegastosjg/raw/main/mes-gui2.png'
+            const awardGifs = {
+                'João': 'https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/joaoc.gif',
+                'Gui': 'https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/guic2.gif'
             };
             const positiveFeedback = { 'Louça': ["A louça está brilhando!", "Essa pia nunca esteve tão limpa.", "Até que enfim, alguém lavou a louça!"], 'Banheiro': ["Até que enfim lavaram o banheiro!", "O banheiro está um brinco!", "Cheirinho de limpeza no banheiro!"], 'Cozinha': ["A cozinha está limpa! Pelo menos pelos próximos 10 minutos.", "Dá até gosto de cozinhar agora.", "Cozinha limpa, coração feliz."], 'Sala': ["Nada como uma sala limpa!", "A sala está pronta para receber visitas.", "Finalmente um lugar decente para sentar."], 'Escada': ["Ufa! A escada já estava pedindo por misericórdia.", "Agora dá pra subir sem medo de escorregar.", "A escada agradece a limpeza."] };
             const negativeFeedback = { 'Cozinha': ["Foi declarada calamidade pública na cozinha.", "A cozinha virou um ecossistema próprio.", "Que tipo de bactéria é essa sendo cultivada na geladeira?", "Gente, sério. Não vou nem fazer piada sobre a cozinha... Só limpem.", "A pia está pedindo socorro.", "Tem comida na geladeira com mais tempo de casa que vocês.", "A cozinha parece um cenário de guerra.", "O cheiro da cozinha está... exótico.", "Acho que vi um rato usando um prato de barco na pia."], 'Banheiro': ["Eu não entraria no banheiro se fosse você.", "O lado bom desse banheiro imundo é que nem dá para ver a cara de pau no espelho.", "Acho que o lixo do banheiro vai criar vida própria.", "O espelho do banheiro já não reflete mais nada.", "O vaso sanitário está em estado de calamidade.", "O banheiro virou uma sauna de germes.", "Acho que o banheiro está em quarentena.", "O banheiro está parecendo um pântano.", "O chuveiro está com mais limo que a Amazônia.", "O banheiro está um nojo, simples assim."], 'Sala': ["Malham tanto e não conseguem erguer uma vassoura pra limpar essa sala?", "O puppy estava prenho? Ah não é só uma BOLA ENORME DE PELOS no canto sala.", "A poeira na sala está competindo com o Saara.", "A sala virou uma extensão do quarto de vocês.", "Se a gente ligar o aspirador, ele engasga.", "A sala está um caos, parece que passou um furacão.", "A TV está com mais marcas de dedo que um celular.", "Repitam comigo: Chão sujo, casa suja.", "A sala está pedindo socorro."], 'Escada': ["Se alguém cair na escada a quantidade de pelo até amortece.", "A escada está mais perigosa que a montanha-russa.", "A escada virou um campo minado de sujeira.", "Cada degrau é uma nova surpresa... desagradável.", "A escada não vê uma vassoura desde o ano passado.", "A escada está com mais poeira que um museu.", "A escada está um perigo para a saúde pública.", "A escada está um lixo, literalmente.", "A escada está um convite para o tétano."], 'Geral': ["Estou adorando o experimento social vivendo no lixão da mãe lucinda.", "Na revolução das máquinas eu faço questão de começar eliminando a casa de vocês.", "A casa foi abandonada? Parece!", "Higiene mental começa com higiene pessoal, fica a dica meninos!"] };
@@ -547,7 +547,7 @@
                 if (winner) {
                     award.innerHTML = `
                         <div class="mt-4 flex flex-col items-center">
-                            <img id="award-image" src="${awardImages[winner]}" class="w-48 h-48 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-transform floating">
+                            <img id="award-image" src="${awardGifs[winner]}" class="w-48 h-48 rounded-2xl object-cover floating cursor-pointer hover:scale-105 transition-transform">
                         </div>`;
                     
                     const awardImage = document.getElementById('award-image');
