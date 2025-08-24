@@ -124,6 +124,16 @@
         #edit-post-it-btn {
             background-image: radial-gradient(circle at 30% 30%, #ff7a7a, #ef4444);
         }
+
+        /* --- ANIMAÇÃO DE FLUTUAÇÃO --- */
+        @keyframes float-animation {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float-animation 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
@@ -537,8 +547,7 @@
                 if (winner) {
                     award.innerHTML = `
                         <div class="mt-4 flex flex-col items-center">
-                            <img id="award-image" src="${awardImages[winner]}" class="w-40 h-40 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-transform">
-                            <p class="mt-2 text-lg font-bold text-sky-500">Morador do mês!</p>
+                            <img id="award-image" src="${awardImages[winner]}" class="w-48 h-48 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-transform floating">
                         </div>`;
                     
                     const awardImage = document.getElementById('award-image');
