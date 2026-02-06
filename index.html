@@ -561,7 +561,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCOfFUWw45l8f9_25tFfE14zpbk3k-tFX8",
@@ -574,7 +573,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
         const appStateRef = doc(db, "gestaoDaCasa", "estadoCompartilhado");
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1072,19 +1070,56 @@
                     const transactionId = document.getElementById('transaction-id').value;
                     const purchaseDescription = document.getElementById('purchase-description').value;
 
-                    // Upload da imagem se houver
+                    // Converter imagem para Base64 se houver
                     let receiptImageUrl = '';
                     if (selectedReceiptImage) {
                         try {
-                            submitBtn.textContent = 'Enviando foto...';
-                            const timestamp = Date.now();
-                            const imageRef = ref(storage, `receiptImages/${timestamp}_${selectedReceiptImage.name}`);
-                            await uploadBytes(imageRef, selectedReceiptImage);
-                            receiptImageUrl = await getDownloadURL(imageRef);
-                            console.log('Imagem enviada com sucesso:', receiptImageUrl);
+                            submitBtn.textContent = 'Processando foto...';
+
+                            // Comprimir e converter para Base64
+                            receiptImageUrl = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    const img = new Image();
+                                    img.onload = () => {
+                                        // Criar canvas para redimensionar/comprimir
+                                        const canvas = document.createElement('canvas');
+                                        const ctx = canvas.getContext('2d');
+
+                                        // Redimensionar se muito grande (máx 1200px na maior dimensão)
+                                        let width = img.width;
+                                        let height = img.height;
+                                        const maxSize = 1200;
+
+                                        if (width > maxSize || height > maxSize) {
+                                            if (width > height) {
+                                                height = (height / width) * maxSize;
+                                                width = maxSize;
+                                            } else {
+                                                width = (width / height) * maxSize;
+                                                height = maxSize;
+                                            }
+                                        }
+
+                                        canvas.width = width;
+                                        canvas.height = height;
+                                        ctx.drawImage(img, 0, 0, width, height);
+
+                                        // Converter para Base64 com compressão (qualidade 0.7)
+                                        const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                                        resolve(base64);
+                                    };
+                                    img.onerror = reject;
+                                    img.src = e.target.result;
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(selectedReceiptImage);
+                            });
+
+                            console.log('Imagem convertida para Base64 com sucesso');
                         } catch (error) {
-                            console.error('Erro ao fazer upload da imagem:', error);
-                            const continuar = confirm('Erro ao fazer upload da imagem. Deseja salvar a compra sem a foto?');
+                            console.error('Erro ao processar imagem:', error);
+                            const continuar = confirm('Erro ao processar a imagem. Deseja salvar a compra sem a foto?');
                             if (!continuar) {
                                 submitBtn.disabled = false;
                                 submitBtn.textContent = originalText;
