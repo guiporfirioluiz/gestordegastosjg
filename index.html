@@ -353,9 +353,9 @@
 
     <!-- MODAIS (permanecem os mesmos) -->
     <div id="expense-modal"
-        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <div
-            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto p-6 transform transition-all duration-300 scale-95 opacity-0 my-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button
                     class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
@@ -413,7 +413,7 @@
                 </div>
                 <div class="flex justify-end space-x-3 pt-4"><button type="button"
                         class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button
-                        type="submit"
+                        type="submit" id="submit-expense-btn"
                         class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition">Confirmar</button>
                 </div>
             </form>
@@ -1036,81 +1036,116 @@
 
             document.getElementById('expense-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
-                const date = document.getElementById('expense-date').value;
-                if (totalValue <= 0 || !date) return;
 
-                const personalItems = { 'João': 0, 'Gui': 0 };
-                const personalItemsDescriptions = { 'João': '', 'Gui': '' };
-                document.querySelectorAll('#personal-items-list > div').forEach(itemDiv => {
-                    const owner = itemDiv.querySelector('.personal-item-owner').value;
-                    const value = parseFloat(itemDiv.querySelector('.personal-item-value').value) || 0;
-                    const description = itemDiv.querySelector('.personal-item-description').value || '';
-                    personalItems[owner] += value;
-                    if (description) {
-                        personalItemsDescriptions[owner] = personalItemsDescriptions[owner] ? personalItemsDescriptions[owner] + ', ' + description : description;
+                const submitBtn = document.getElementById('submit-expense-btn');
+                const originalText = submitBtn.textContent;
+
+                // Desabilitar botão e mostrar loading
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Salvando...';
+                submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+                try {
+                    const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
+                    const date = document.getElementById('expense-date').value;
+
+                    if (totalValue <= 0 || !date) {
+                        alert('Por favor, preencha o valor e a data.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                        return;
                     }
-                });
 
-                const transactionId = document.getElementById('transaction-id').value;
-                const purchaseDescription = document.getElementById('purchase-description').value;
-
-                // Upload da imagem se houver
-                let receiptImageUrl = '';
-                if (selectedReceiptImage) {
-                    try {
-                        const timestamp = Date.now();
-                        const imageRef = ref(storage, `receiptImages/${timestamp}_${selectedReceiptImage.name}`);
-                        await uploadBytes(imageRef, selectedReceiptImage);
-                        receiptImageUrl = await getDownloadURL(imageRef);
-                        console.log('Imagem enviada com sucesso:', receiptImageUrl);
-                    } catch (error) {
-                        console.error('Erro ao fazer upload da imagem:', error);
-                        alert('Erro ao fazer upload da imagem. A compra será salva sem a foto.');
-                    }
-                }
-
-                console.log('Formulário enviado. ID da transação:', transactionId || 'Nenhum (novo item)');
-
-                if (transactionId) {
-                    const updatedTransactions = appState.transactions.map(tx => {
-                        if (tx.id === transactionId) {
-                            console.log('Encontrada transação para atualizar:', tx);
-                            const updatedTx = {
-                                ...tx,
-                                payer: document.getElementById('payer').value,
-                                description: purchaseDescription,
-                                totalValue,
-                                personalItems,
-                                personalItemsDescriptions,
-                                date,
-                                receiptImageUrl: receiptImageUrl || tx.receiptImageUrl || ''
-                            };
-                            console.log('Dados atualizados:', updatedTx);
-                            return updatedTx;
+                    const personalItems = { 'João': 0, 'Gui': 0 };
+                    const personalItemsDescriptions = { 'João': '', 'Gui': '' };
+                    document.querySelectorAll('#personal-items-list > div').forEach(itemDiv => {
+                        const owner = itemDiv.querySelector('.personal-item-owner').value;
+                        const value = parseFloat(itemDiv.querySelector('.personal-item-value').value) || 0;
+                        const description = itemDiv.querySelector('.personal-item-description').value || '';
+                        personalItems[owner] += value;
+                        if (description) {
+                            personalItemsDescriptions[owner] = personalItemsDescriptions[owner] ? personalItemsDescriptions[owner] + ', ' + description : description;
                         }
-                        return tx;
                     });
-                    console.log('Enviando array de transações atualizado para o Firebase:', updatedTransactions);
-                    updateDoc(appStateRef, { transactions: updatedTransactions });
-                } else {
-                    const newTransaction = {
-                        id: Date.now().toString(),
-                        category: currentCategory,
-                        payer: document.getElementById('payer').value,
-                        description: purchaseDescription,
-                        totalValue,
-                        personalItems,
-                        personalItemsDescriptions,
-                        date,
-                        receiptImageUrl: receiptImageUrl || ''
-                    };
-                    console.log('Enviando nova transação para o Firebase:', newTransaction);
-                    updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
-                }
 
-                showAnimation(e.submitter, 'coin-animation', '$');
-                closeModal(expenseModal);
+                    const transactionId = document.getElementById('transaction-id').value;
+                    const purchaseDescription = document.getElementById('purchase-description').value;
+
+                    // Upload da imagem se houver
+                    let receiptImageUrl = '';
+                    if (selectedReceiptImage) {
+                        try {
+                            submitBtn.textContent = 'Enviando foto...';
+                            const timestamp = Date.now();
+                            const imageRef = ref(storage, `receiptImages/${timestamp}_${selectedReceiptImage.name}`);
+                            await uploadBytes(imageRef, selectedReceiptImage);
+                            receiptImageUrl = await getDownloadURL(imageRef);
+                            console.log('Imagem enviada com sucesso:', receiptImageUrl);
+                        } catch (error) {
+                            console.error('Erro ao fazer upload da imagem:', error);
+                            const continuar = confirm('Erro ao fazer upload da imagem. Deseja salvar a compra sem a foto?');
+                            if (!continuar) {
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = originalText;
+                                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                                return;
+                            }
+                        }
+                    }
+
+                    submitBtn.textContent = 'Finalizando...';
+                    console.log('Formulário enviado. ID da transação:', transactionId || 'Nenhum (novo item)');
+
+                    if (transactionId) {
+                        const updatedTransactions = appState.transactions.map(tx => {
+                            if (tx.id === transactionId) {
+                                console.log('Encontrada transação para atualizar:', tx);
+                                const updatedTx = {
+                                    ...tx,
+                                    payer: document.getElementById('payer').value,
+                                    description: purchaseDescription,
+                                    totalValue,
+                                    personalItems,
+                                    personalItemsDescriptions,
+                                    date,
+                                    receiptImageUrl: receiptImageUrl || tx.receiptImageUrl || ''
+                                };
+                                console.log('Dados atualizados:', updatedTx);
+                                return updatedTx;
+                            }
+                            return tx;
+                        });
+                        console.log('Enviando array de transações atualizado para o Firebase:', updatedTransactions);
+                        await updateDoc(appStateRef, { transactions: updatedTransactions });
+                    } else {
+                        const newTransaction = {
+                            id: Date.now().toString(),
+                            category: currentCategory,
+                            payer: document.getElementById('payer').value,
+                            description: purchaseDescription,
+                            totalValue,
+                            personalItems,
+                            personalItemsDescriptions,
+                            date,
+                            receiptImageUrl: receiptImageUrl || ''
+                        };
+                        console.log('Enviando nova transação para o Firebase:', newTransaction);
+                        await updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
+                    }
+
+                    showAnimation(submitBtn, 'coin-animation', '$');
+                    closeModal(expenseModal);
+
+                } catch (error) {
+                    console.error('Erro ao salvar:', error);
+                    alert('Erro ao salvar a compra. Tente novamente.');
+                } finally {
+                    // Restaurar botão
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
             });
 
             document.getElementById('task-type').addEventListener('change', (e) => { document.getElementById('task-level').disabled = e.target.value === 'Louça'; });
