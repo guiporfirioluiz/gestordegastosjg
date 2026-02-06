@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestão da Casa</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .modal-backdrop { transition: opacity 0.3s ease-in-out; }
-        ::placeholder { color: #9ca3af; }
-        .points-animation, .emoji-animation, .feedback-emoji {
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        ::placeholder {
+            color: #9ca3af;
+        }
+
+        .points-animation,
+        .emoji-animation,
+        .feedback-emoji {
             position: fixed;
             font-size: 1.5rem;
             font-weight: bold;
@@ -27,22 +39,37 @@
             animation: float-up 2s ease-out forwards;
             pointer-events: none;
         }
+
         .points-animation {
-            color: #fb7185; /* rose-400 */
+            color: #fb7185;
+            /* rose-400 */
         }
-        .emoji-animation, .feedback-emoji {
+
+        .emoji-animation,
+        .feedback-emoji {
             font-size: 1.75rem;
         }
+
         @keyframes float-up {
-            from { transform: translateY(0); opacity: 1; }
-            to { transform: translateY(-60px); opacity: 0; }
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-60px);
+                opacity: 0;
+            }
         }
+
         .coin-animation {
             position: fixed;
             width: 1.75rem;
             height: 1.75rem;
-            background-color: #facc15; /* yellow-400 */
-            border: 3px solid #ca8a04; /* yellow-600 */
+            background-color: #facc15;
+            /* yellow-400 */
+            border: 3px solid #ca8a04;
+            /* yellow-600 */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -53,23 +80,40 @@
             animation: float-and-spin 1.5s ease-out forwards;
             pointer-events: none;
         }
+
         @keyframes float-and-spin {
-            from { transform: translateY(0) rotateY(0deg); opacity: 1; }
-            to { transform: translateY(-80px) rotateY(1080deg); opacity: 0; }
+            from {
+                transform: translateY(0) rotateY(0deg);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-80px) rotateY(1080deg);
+                opacity: 0;
+            }
         }
+
         .speech-bubble {
             position: relative;
-            background: #f0f9ff; /* sky-50 */
-            border: 1px solid #e0f2fe; /* sky-100 */
+            background: #f0f9ff;
+            /* sky-50 */
+            border: 1px solid #e0f2fe;
+            /* sky-100 */
             border-radius: .5em;
             padding: 10px;
-            color: #0c4a6e; /* sky-900 */
+            color: #0c4a6e;
+            /* sky-900 */
         }
+
         .speech-bubble.positive {
-            background: #f0fdfa; /* teal-50 */
-            border-color: #ccfbf1; /* teal-100 */
-            color: #134e4a; /* teal-900 */
+            background: #f0fdfa;
+            /* teal-50 */
+            border-color: #ccfbf1;
+            /* teal-100 */
+            color: #134e4a;
+            /* teal-900 */
         }
+
         .speech-bubble:after {
             content: '';
             position: absolute;
@@ -78,14 +122,18 @@
             width: 0;
             height: 0;
             border: 10px solid transparent;
-            border-bottom-color: #e0f2fe; /* sky-100 */
+            border-bottom-color: #e0f2fe;
+            /* sky-100 */
             border-top: 0;
             margin-left: -10px;
             margin-top: -10px;
         }
+
         .speech-bubble.positive:after {
-            border-bottom-color: #ccfbf1; /* teal-100 */
+            border-bottom-color: #ccfbf1;
+            /* teal-100 */
         }
+
         .balance-hidden {
             filter: blur(5px);
             cursor: pointer;
@@ -95,31 +143,43 @@
         #tab-container {
             scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* Para iOS */
+            -webkit-overflow-scrolling: touch;
+            /* Para iOS */
         }
+
         #tab-container::-webkit-scrollbar {
-            display: none; /* Esconde a barra de rolagem */
+            display: none;
+            /* Esconde a barra de rolagem */
         }
+
         .tab-page {
             scroll-snap-align: start;
-            position: relative; /* Garante o contexto de empilhamento para corrigir o bug do pino */
-            background-color: white; /* Garante que a aba não seja transparente */
-            min-height: 50vh; /* Garante uma altura mínima para evitar espaços em branco */
+            position: relative;
+            /* Garante o contexto de empilhamento para corrigir o bug do pino */
+            background-color: white;
+            /* Garante que a aba não seja transparente */
+            min-height: 50vh;
+            /* Garante uma altura mínima para evitar espaços em branco */
         }
+
         .tab-btn {
             padding: 8px 16px;
             border-radius: 9999px;
             font-weight: 500;
             transition: all 0.3s;
-            color: #64748b; /* slate-500 */
-            background-color: #f1f5f9; /* slate-100 */
+            color: #64748b;
+            /* slate-500 */
+            background-color: #f1f5f9;
+            /* slate-100 */
         }
+
         .tab-btn.active {
             color: #fff;
-            background-color: #38bdf8; /* sky-400 */
+            background-color: #38bdf8;
+            /* sky-400 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
-        
+
         /* --- ESTILOS ATUALIZADOS DO PINO --- */
         #edit-post-it-btn {
             background-image: radial-gradient(circle at 30% 30%, #ff7a7a, #ef4444);
@@ -127,15 +187,25 @@
 
         /* --- ANIMAÇÃO DE FLUTUAÇÃO --- */
         @keyframes float-animation {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
+
         .floating {
             animation: float-animation 3s ease-in-out infinite;
         }
     </style>
 </head>
+
 <body class="bg-white text-gray-800">
 
     <div class="flex flex-col items-center">
@@ -145,8 +215,12 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestão da Casa</h1>
                 <p id="settlement-date-text" class="text-gray-500"></p>
                 <div class="my-4">
-                    <video id="contas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover" autoplay loop muted playsinline src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/CAtinho.mp4"></video>
-                    <video id="tarefas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover hidden" autoplay loop muted playsinline src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/Kodico.mp4"></video>
+                    <video id="contas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover" autoplay loop muted
+                        playsinline
+                        src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/CAtinho.mp4"></video>
+                    <video id="tarefas-video" class="w-48 h-48 mx-auto rounded-2xl object-cover hidden" autoplay loop
+                        muted playsinline
+                        src="https://raw.githubusercontent.com/guiporfirioluiz/gestordegastosjg/main/Kodico.mp4"></video>
                 </div>
             </header>
 
@@ -167,22 +241,39 @@
                         <div class="flex items-center justify-center space-x-2">
                             <p id="balance-text" class="text-xl font-bold text-gray-800">Carregando dados...</p>
                             <button id="toggle-balance-visibility" class="text-gray-500 hover:text-gray-800">
-                                <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.668.124 2.454.354M7.5 7.5l12 12M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.668.124 2.454.354M7.5 7.5l12 12M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
                             </button>
                         </div>
                     </section>
-                    
+
                     <div class="mb-8 text-center">
-                        <button id="settle-up-btn" class="w-full sm:w-auto px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Acerto de Contas</button>
+                        <button id="settle-up-btn"
+                            class="w-full sm:w-auto px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Acerto
+                            de Contas</button>
                     </div>
 
                     <section id="post-it-section" class="mb-8 relative">
-                        <div class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
-                            <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique no pino para adicionar um lembrete...</p>
-                            <textarea id="post-it-text-input" class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700" placeholder="Digite seu lembrete..."></textarea>
+                        <div
+                            class="bg-amber-200 p-6 rounded-lg shadow-md min-h-[100px] flex items-center justify-center">
+                            <p id="post-it-text-display" class="w-full text-center text-gray-700 cursor-pointer">Clique
+                                no pino para adicionar um lembrete...</p>
+                            <textarea id="post-it-text-input"
+                                class="hidden bg-transparent w-full h-full resize-none border-0 focus:ring-0 text-center text-gray-700"
+                                placeholder="Digite seu lembrete..."></textarea>
                         </div>
-                        <button id="edit-post-it-btn" class="absolute -top-3 right-1 w-8 h-8 rounded-full shadow-lg transform -rotate-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                        <button id="edit-post-it-btn"
+                            class="absolute -top-3 right-1 w-8 h-8 rounded-full shadow-lg transform -rotate-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
                             <div class="w-4 h-4 bg-red-300 rounded-full"></div>
                         </button>
                     </section>
@@ -190,21 +281,36 @@
                     <main>
                         <h2 class="text-xl font-semibold text-gray-700 mb-4">Gastos</h2>
                         <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
-                            <div data-category="Mercado" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Mercado</div></div>
-                            <div id="fixed-bills-card" class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Contas Fixas</div></div>
-                            <div data-category="Outras Compras" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Outras Compras</div></div>
-                            <div data-category="Visão Geral" class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"><div class="font-semibold text-lg">Visão Geral</div></div>
+                            <div data-category="Mercado"
+                                class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-teal-300 to-teal-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                <div class="font-semibold text-lg">Mercado</div>
+                            </div>
+                            <div id="fixed-bills-card"
+                                class="h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-sky-300 to-sky-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                <div class="font-semibold text-lg">Contas Fixas</div>
+                            </div>
+                            <div data-category="Outras Compras"
+                                class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-violet-300 to-violet-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                <div class="font-semibold text-lg">Outras Compras</div>
+                            </div>
+                            <div data-category="Visão Geral"
+                                class="category-card h-32 sm:h-36 flex flex-col justify-end p-4 rounded-2xl text-white bg-gradient-to-br from-rose-300 to-rose-400 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                                <div class="font-semibold text-lg">Visão Geral</div>
+                            </div>
                         </div>
 
                         <section id="shopping-list-section" class="mb-8">
                             <h2 class="text-xl font-semibold text-gray-700 mb-4">Lista de Compras</h2>
                             <div class="bg-white rounded-2xl shadow-md p-5">
                                 <form id="shopping-list-form" class="flex space-x-2 mb-4">
-                                    <input type="text" id="shopping-item-input" placeholder="Adicionar item..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
-                                    <button type="submit" class="px-4 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg hover:bg-sky-400 transition">+</button>
+                                    <input type="text" id="shopping-item-input" placeholder="Adicionar item..."
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg hover:bg-sky-400 transition">+</button>
                                 </form>
                                 <ul id="shopping-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
-                                <button id="clear-shopping-list-btn" class="w-full mt-4 text-sm text-rose-500 hover:text-rose-700">Limpar Lista</button>
+                                <button id="clear-shopping-list-btn"
+                                    class="w-full mt-4 text-sm text-rose-500 hover:text-rose-700">Limpar Lista</button>
                             </div>
                         </section>
 
@@ -217,22 +323,25 @@
 
                 <!-- ABA DE TAREFAS -->
                 <div id="tarefas-page" class="w-full flex-shrink-0 tab-page">
-                     <section id="gamification-section">
+                    <section id="gamification-section">
                         <h2 class="text-xl font-semibold text-gray-700 mb-4">Tarefas da Casa</h2>
                         <div class="bg-white rounded-2xl shadow-md p-5">
                             <div id="scoreboard" class="flex justify-between items-center text-center mb-4"></div>
                             <div id="monthly-award" class="text-center mb-4"></div>
                             <div id="task-feedback" class="text-center text-sm mb-4 space-y-2 min-h-[20px]"></div>
                             <div class="flex flex-col space-y-3">
-                                    <div>
-                                        <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?</h4>
-                                        <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
-                                    </div>
-                                <button id="add-task-btn" class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar Tarefa Feita</button>
+                                <div>
+                                    <h4 class="font-semibold text-center text-gray-600 mb-2">O que precisa ser feito?
+                                    </h4>
+                                    <div id="needed-tasks-container" class="grid grid-cols-2 gap-2"></div>
+                                </div>
+                                <button id="add-task-btn"
+                                    class="w-full px-6 py-2 bg-sky-300 text-sky-800 font-semibold rounded-lg shadow-md hover:bg-sky-400 transition">Registrar
+                                    Tarefa Feita</button>
                             </div>
                         </div>
                     </section>
-                    
+
                     <section id="task-history-section" class="mt-8">
                         <h3 class="text-xl font-semibold text-gray-700 mb-4">Histórico de Tarefas</h3>
                         <div id="task-history-list" class="space-y-3"></div>
@@ -243,100 +352,208 @@
     </div>
 
     <!-- MODAIS (permanecem os mesmos) -->
-    <div id="expense-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6"><h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+    <div id="expense-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-title" class="text-xl font-bold text-gray-800">Adicionar Gasto</h2><button
+                    class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
             <form id="expense-form" class="space-y-4">
                 <input type="hidden" id="transaction-id">
-                <div id="purchase-name-container" class="hidden"><label for="purchase-name" class="block text-sm font-medium text-gray-700 mb-1">Nome da Compra (Opcional)</label><input type="text" id="purchase-name" placeholder="Ex: Churrasco de sábado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
-                <div><label for="expense-date" class="block text-sm font-medium text-gray-700 mb-1">Data</label><input type="date" id="expense-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"></div>
+                <div id="purchase-description-container"><label for="purchase-description"
+                        class="block text-sm font-medium text-gray-700 mb-1">Descrição (Opcional)</label><input
+                        type="text" id="purchase-description" placeholder="Ex: Produtos de limpeza, churrasco, etc."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div><label for="expense-date" class="block text-sm font-medium text-gray-700 mb-1">Data</label><input
+                        type="date" id="expense-date"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                </div>
                 <div>
                     <label for="payer" class="block text-sm font-medium text-gray-700 mb-1">Quem pagou?</label>
                     <div class="relative">
-                        <select id="payer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 appearance-none bg-white">
+                        <select id="payer"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 appearance-none bg-white">
                             <option>João</option>
                             <option>Gui</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
                         </div>
                     </div>
                 </div>
-                <div><label for="total-value" class="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label><input type="number" id="total-value" step="0.01" placeholder="150.50" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500" required></div>
-                <div id="discount-container" class="pt-2"><button type="button" id="toggle-discount-btn" class="w-full text-sm text-sky-600 hover:text-sky-800 font-medium py-2 rounded-lg bg-sky-50 hover:bg-sky-100 transition">Descontar itens pessoais</button><div id="discount-section" class="hidden space-y-3 mt-4"><div id="personal-items-list"></div><button type="button" id="add-item-btn" class="w-full text-sm text-teal-600 hover:text-teal-800 font-medium py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition">+ Adicionar item</button></div></div>
-                <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button type="submit" class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition">Confirmar</button></div>
+                <div><label for="total-value" class="block text-sm font-medium text-gray-700 mb-1">Valor Total
+                        (R$)</label><input type="number" id="total-value" step="0.01" placeholder="150.50"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                        required></div>
+                <div>
+                    <label for="receipt-image" class="block text-sm font-medium text-gray-700 mb-1">📷 Foto da Nota
+                        Fiscal (Opcional)</label>
+                    <input type="file" id="receipt-image" accept="image/*" capture="environment"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100">
+                    <div id="image-preview-container" class="hidden mt-2">
+                        <img id="image-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                        <button type="button" id="remove-image-btn"
+                            class="w-full mt-2 text-sm text-rose-500 hover:text-rose-700">❌ Remover foto</button>
+                    </div>
+                </div>
+                <div id="discount-container" class="pt-2"><button type="button" id="toggle-discount-btn"
+                        class="w-full text-sm text-sky-600 hover:text-sky-800 font-medium py-2 rounded-lg bg-sky-50 hover:bg-sky-100 transition">Descontar
+                        itens pessoais</button>
+                    <div id="discount-section" class="hidden space-y-3 mt-4">
+                        <div id="personal-items-list"></div><button type="button" id="add-item-btn"
+                            class="w-full text-sm text-teal-600 hover:text-teal-800 font-medium py-2 rounded-lg bg-teal-50 hover:bg-teal-100 transition">+
+                            Adicionar item</button>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4"><button type="button"
+                        class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button
+                        type="submit"
+                        class="px-4 py-2 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition">Confirmar</button>
+                </div>
             </form>
         </div>
     </div>
-    <div id="fixed-bills-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Contas Fixas</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+    <div id="fixed-bills-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Contas Fixas</h2><button
+                    class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
             <div id="calendar-container" class="mb-4"></div>
             <div id="calendar-legend" class="flex flex-wrap gap-x-4 gap-y-1 text-xs mb-4"></div>
-            <div class="space-y-3 pt-4 border-t"><div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center"><p class="font-semibold">Moradia</p><p class="font-bold text-gray-700">R$ 600.00</p></div><button data-bill="Água" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Água</button><button data-bill="Luz" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Luz</button><button data-bill="Internet" class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta de Internet</button></div>
+            <div class="space-y-3 pt-4 border-t">
+                <div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                    <p class="font-semibold">Moradia</p>
+                    <p class="font-bold text-gray-700">R$ 600.00</p>
+                </div><button data-bill="Água"
+                    class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta
+                    de Água</button><button data-bill="Luz"
+                    class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta
+                    de Luz</button><button data-bill="Internet"
+                    class="fixed-bill-btn w-full text-left p-3 rounded-lg hover:bg-gray-100 transition">Adicionar conta
+                    de Internet</button>
+            </div>
         </div>
     </div>
-    <div id="settlement-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Acerto de Contas</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
-            <div class="space-y-4"><p id="settlement-summary" class="text-center text-lg">Calculando...</p><p class="text-sm text-center text-gray-500">Ao confirmar, o histórico será reiniciado para o próximo mês.</p><div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button id="confirm-settlement-btn" class="px-4 py-2 bg-sky-400 text-white font-semibold rounded-lg hover:bg-sky-500 transition">Confirmar Acerto</button></div></div>
+    <div id="settlement-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Acerto de Contas</h2><button
+                    class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <p id="settlement-summary" class="text-center text-lg">Calculando...</p>
+                <p class="text-sm text-center text-gray-500">Ao confirmar, o histórico será reiniciado para o próximo
+                    mês.</p>
+                <div class="flex justify-end space-x-3 pt-4"><button type="button"
+                        class="cancel-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</button><button
+                        id="confirm-settlement-btn"
+                        class="px-4 py-2 bg-sky-400 text-white font-semibold rounded-lg hover:bg-sky-500 transition">Confirmar
+                        Acerto</button></div>
+            </div>
         </div>
     </div>
-    <div id="task-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-gray-800">Registrar Tarefa</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+    <div id="task-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Registrar Tarefa</h2><button
+                    class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
             <form id="task-form" class="space-y-4">
                 <div>
                     <label for="task-doer" class="block text-sm font-medium text-gray-700 mb-1">Quem fez?</label>
                     <div class="relative">
-                        <select id="task-doer" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
+                        <select id="task-doer"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
                             <option>João</option>
                             <option>Gui</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
                         </div>
                     </div>
                 </div>
                 <div>
                     <label for="task-type" class="block text-sm font-medium text-gray-700 mb-1">Tarefa</label>
                     <div class="relative">
-                        <select id="task-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
+                        <select id="task-type"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none">
                             <option value="Louça">Louça</option>
                             <option value="Banheiro">Banheiro</option>
                             <option value="Cozinha">Cozinha</option>
                             <option value="Sala">Sala</option>
                             <option value="Escada">Escada</option>
                         </select>
-                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                         </div>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
                 <div id="task-level-container">
-                    <label for="task-level" class="block text-sm font-medium text-gray-700 mb-1">Nível de Limpeza</label>
+                    <label for="task-level" class="block text-sm font-medium text-gray-700 mb-1">Nível de
+                        Limpeza</label>
                     <div class="relative">
-                        <select id="task-level" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none disabled:bg-gray-100">
+                        <select id="task-level"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white appearance-none disabled:bg-gray-100">
                             <option value="Leve">Leve</option>
                             <option value="Moderada">Moderada</option>
                             <option value="Intensa">Intensa</option>
                         </select>
-                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                         </div>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-end space-x-3 pt-4"><button type="button" class="cancel-btn px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button><button type="submit" class="px-4 py-2 bg-rose-400 text-white font-semibold rounded-lg">Registrar</button></div>
+                <div class="flex justify-end space-x-3 pt-4"><button type="button"
+                        class="cancel-btn px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button><button type="submit"
+                        class="px-4 py-2 bg-rose-400 text-white font-semibold rounded-lg">Registrar</button></div>
             </form>
         </div>
     </div>
-    <div id="overview-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-gray-800">Visão Geral do Mês</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+    <div id="overview-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Visão Geral do Mês</h2><button
+                    class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
             <div>
                 <canvas id="expenses-chart"></canvas>
-                <p class="text-xs text-center text-gray-500 mt-4">Comparativo com meses anteriores ficará disponível em futuras versões.</p>
+                <p class="text-xs text-center text-gray-500 mt-4">Comparativo com meses anteriores ficará disponível em
+                    futuras versões.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE IMAGEM -->
+    <div id="image-viewer-modal"
+        class="modal-backdrop fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="relative max-w-4xl w-full">
+            <button
+                class="close-modal-btn absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition text-2xl z-10">&times;</button>
+            <img id="viewer-image" class="w-full h-auto rounded-lg shadow-2xl" src="">
         </div>
     </div>
 
@@ -344,6 +561,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCOfFUWw45l8f9_25tFfE14zpbk3k-tFX8",
@@ -356,12 +574,14 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const appStateRef = doc(db, "gestaoDaCasa", "estadoCompartilhado");
 
         document.addEventListener('DOMContentLoaded', () => {
             let appState = {};
             let currentCategory = '';
             let isBalanceVisible = false;
+            let selectedReceiptImage = null; // Armazena o arquivo da imagem selecionada
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const billColors = { 'Moradia': 'bg-sky-400', 'Internet': 'bg-violet-400', 'Luz': 'bg-amber-400', 'Água': 'bg-cyan-400' };
             const taskPoints = {
@@ -385,8 +605,8 @@
             const settlementModal = document.getElementById('settlement-modal');
             const taskModal = document.getElementById('task-modal');
             const overviewModal = document.getElementById('overview-modal');
-            let expensesChart = null; 
-            
+            let expensesChart = null;
+
             const openModal = (modal) => {
                 modal.classList.remove('hidden');
                 setTimeout(() => {
@@ -406,15 +626,19 @@
                         document.getElementById('personal-items-list').innerHTML = '';
                         document.getElementById('discount-section').classList.add('hidden');
                         document.getElementById('transaction-id').value = '';
+                        // Limpar imagem
+                        selectedReceiptImage = null;
+                        document.getElementById('image-preview-container').classList.add('hidden');
+                        document.getElementById('receipt-image').value = '';
                     }
                 }, 300);
             };
 
             const openExpenseModal = (category, options = {}) => {
                 const { defaultPayer = 'João', showDiscount = true, transaction = null } = options;
-                
+
                 const form = document.getElementById('expense-form');
-                form.reset(); 
+                form.reset();
                 currentCategory = category;
                 const modalTitle = document.getElementById('modal-title');
                 const personalItemsList = document.getElementById('personal-items-list');
@@ -425,7 +649,7 @@
                 if (transaction) {
                     modalTitle.textContent = `Editar Gasto de ${transaction.category}`;
                     document.getElementById('transaction-id').value = transaction.id;
-                    document.getElementById('purchase-name').value = transaction.name || '';
+                    document.getElementById('purchase-description').value = transaction.description || '';
                     document.getElementById('expense-date').value = transaction.date;
                     document.getElementById('payer').value = transaction.payer;
                     document.getElementById('total-value').value = transaction.totalValue;
@@ -433,23 +657,23 @@
                     if (hasPersonalItems) {
                         discountSection.classList.remove('hidden');
                         for (const owner in transaction.personalItems) {
-                             if (transaction.personalItems[owner] > 0) {
-                                 addPersonalItemInput(transaction.personalItems[owner], owner);
-                             }
+                            if (transaction.personalItems[owner] > 0) {
+                                const itemDescription = transaction.personalItemsDescriptions && transaction.personalItemsDescriptions[owner] ? transaction.personalItemsDescriptions[owner] : '';
+                                addPersonalItemInput(transaction.personalItems[owner], owner, itemDescription);
+                            }
                         }
                     }
                 } else {
                     modalTitle.textContent = `Adicionar Gasto de ${category}`;
                     document.getElementById('transaction-id').value = '';
+                    document.getElementById('purchase-description').value = '';
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
                     document.getElementById('payer').value = defaultPayer;
                 }
 
                 document.getElementById('discount-container').style.display = showDiscount ? 'block' : 'none';
-                const purchaseNameContainer = document.getElementById('purchase-name-container');
-                const currentDisplayCategory = transaction ? transaction.category : category;
-                purchaseNameContainer.style.display = (currentDisplayCategory === 'Outras Compras') ? 'block' : 'none';
-                
+                // Campo de descrição sempre visível para todas as compras
+
                 openModal(expenseModal);
             };
 
@@ -500,19 +724,23 @@
                 [...appState.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(tx => {
                     const debtor = tx.payer === 'João' ? 'Gui' : 'João';
                     const personalItems = tx.personalItems || { 'João': 0, 'Gui': 0 };
+                    const personalItemsDescriptions = tx.personalItemsDescriptions || { 'João': '', 'Gui': '' };
                     const personalItemsForPayer = personalItems[tx.payer];
                     const personalItemsForOther = personalItems[debtor];
                     const sharedValue = tx.totalValue - personalItemsForPayer - personalItemsForOther;
                     const amountPerPerson = (sharedValue / 2) + personalItemsForOther;
                     const formattedDate = new Date(tx.date + 'T00:00:00').toLocaleDateString('pt-BR');
-                    const purchaseNameHTML = tx.name ? `<p class="text-sm font-medium text-gray-600">${tx.name}</p>` : '';
+                    const purchaseDescriptionHTML = tx.description ? `<p class="text-sm font-medium text-gray-600">📝 ${tx.description}</p>` : '';
                     let breakdownHTML = '';
                     if (personalItemsForPayer > 0 || personalItemsForOther > 0) {
-                        breakdownHTML = `<div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2"><p>Total: R$ ${tx.totalValue.toFixed(2)}</p>${personalItemsForPayer > 0 ? `<p>Itens Pessoais (${tx.payer}): - R$ ${personalItemsForPayer.toFixed(2)}</p>` : ''}${personalItemsForOther > 0 ? `<p>Itens Pessoais (${debtor}): - R$ ${personalItemsForOther.toFixed(2)}</p>` : ''}<p class="font-medium">A dividir: R$ ${sharedValue.toFixed(2)}</p></div>`;
+                        const payerDescHTML = personalItemsDescriptions[tx.payer] ? ` <span class="text-gray-400 italic">(${personalItemsDescriptions[tx.payer]})</span>` : '';
+                        const otherDescHTML = personalItemsDescriptions[debtor] ? ` <span class="text-gray-400 italic">(${personalItemsDescriptions[debtor]})</span>` : '';
+                        breakdownHTML = `<div class="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2"><p>Total: R$ ${tx.totalValue.toFixed(2)}</p>${personalItemsForPayer > 0 ? `<p>Itens Pessoais (${tx.payer}): - R$ ${personalItemsForPayer.toFixed(2)}${payerDescHTML}</p>` : ''}${personalItemsForOther > 0 ? `<p>Itens Pessoais (${debtor}): - R$ ${personalItemsForOther.toFixed(2)}${otherDescHTML}</p>` : ''}<p class="font-medium">A dividir: R$ ${sharedValue.toFixed(2)}</p></div>`;
                     }
                     const historyItem = document.createElement('div');
                     historyItem.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200';
-                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div class="min-w-0 mr-2"><p class="font-semibold text-gray-800 truncate">${tx.category}</p>${purchaseNameHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right flex-shrink-0"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}<div class="flex justify-end items-center space-x-2 mt-2 pt-2 border-t border-gray-100"><button data-id="${tx.id}" class="edit-transaction-btn text-gray-400 hover:text-sky-600" title="Editar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"/></svg></button><button data-id="${tx.id}" class="delete-transaction-btn text-gray-400 hover:text-rose-600" title="Apagar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;
+                    const receiptButtonHTML = tx.receiptImageUrl ? `<button data-image="${tx.receiptImageUrl}" class="view-receipt-btn text-gray-400 hover:text-green-600" title="Ver Nota Fiscal"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></button>` : '';
+                    historyItem.innerHTML = `<div class="flex justify-between items-start"><div class="min-w-0 mr-2"><p class="font-semibold text-gray-800 truncate">${tx.category}</p>${purchaseDescriptionHTML}<p class="text-sm text-gray-500">Pago por: <span class="font-medium text-gray-700">${tx.payer}</span></p><p class="text-xs text-gray-400">${formattedDate}</p></div><div class="text-right flex-shrink-0"><p class="font-bold text-lg ${tx.category === 'Moradia' ? 'text-gray-700' : 'text-teal-600'}">R$ ${tx.totalValue.toFixed(2)}</p>${amountPerPerson > 0 ? `<p class="text-xs text-sky-700">${debtor} deve R$ ${amountPerPerson.toFixed(2)}</p>` : ''}</div></div>${breakdownHTML}<div class="flex justify-end items-center space-x-2 mt-2 pt-2 border-t border-gray-100">${receiptButtonHTML}<button data-id="${tx.id}" class="edit-transaction-btn text-gray-400 hover:text-sky-600" title="Editar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"/></svg></button><button data-id="${tx.id}" class="delete-transaction-btn text-gray-400 hover:text-rose-600" title="Apagar Gasto"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`;
                     historyList.appendChild(historyItem);
                 });
             };
@@ -549,7 +777,7 @@
                         <div class="mt-4 flex flex-col items-center">
                             <img id="award-image" src="${awardGifs[winner]}" class="w-48 h-48 rounded-2xl object-cover floating cursor-pointer hover:scale-105 transition-transform">
                         </div>`;
-                    
+
                     const awardImage = document.getElementById('award-image');
                     if (awardImage) {
                         awardImage.addEventListener('click', (e) => {
@@ -632,10 +860,10 @@
                     return;
                 }
                 const recentTasks = appState.taskHistory ? appState.taskHistory.filter(t => (new Date() - new Date(t.date)) < 3 * 24 * 60 * 60 * 1000) : [];
-                if(recentTasks.length > 0) {
-                    const lastTask = recentTasks.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+                if (recentTasks.length > 0) {
+                    const lastTask = recentTasks.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
                     const comments = positiveFeedback[lastTask.type];
-                    if(comments) {
+                    if (comments) {
                         const comment = comments[Math.floor(Math.random() * comments.length)];
                         const bubble = document.createElement('div');
                         bubble.className = 'speech-bubble positive';
@@ -687,13 +915,13 @@
                     if (tx.category in categories) categories[tx.category] += tx.totalValue;
                     else if (['Água', 'Luz', 'Internet', 'Moradia'].includes(tx.category)) categories['Contas Fixas'] += tx.totalValue;
                 });
-                const data = { labels: Object.keys(categories), datasets: [{ label: 'Gastos do Mês', data: Object.values(categories), backgroundColor: [ 'rgba(20, 184, 166, 0.7)', 'rgba(56, 189, 248, 0.7)', 'rgba(167, 139, 250, 0.7)' ], borderColor: [ 'rgb(15, 118, 110)', 'rgb(14, 116, 144)', 'rgb(124, 58, 237)' ], borderWidth: 1 }] };
+                const data = { labels: Object.keys(categories), datasets: [{ label: 'Gastos do Mês', data: Object.values(categories), backgroundColor: ['rgba(20, 184, 166, 0.7)', 'rgba(56, 189, 248, 0.7)', 'rgba(167, 139, 250, 0.7)'], borderColor: ['rgb(15, 118, 110)', 'rgb(14, 116, 144)', 'rgb(124, 58, 237)'], borderWidth: 1 }] };
                 if (expensesChart) expensesChart.destroy();
                 expensesChart = new Chart(ctx, { type: 'doughnut', data: data, options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Distribuição de Gastos' } } } });
             };
             const resetAccounts = () => setDoc(appStateRef, getInitialState());
             const getInitialState = () => ({
-                transactions: [{ id: 'moradia_inicial', category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: new Date().toISOString().split('T')[0], personalItems: { 'João': 0, 'Gui': 0 }, name: '' }],
+                transactions: [{ id: 'moradia_inicial', category: 'Moradia', payer: 'Gui', totalValue: 600.00, valueToSplit: 600.00, date: new Date().toISOString().split('T')[0], personalItems: { 'João': 0, 'Gui': 0 }, personalItemsDescriptions: { 'João': '', 'Gui': '' }, description: '', receiptImageUrl: '' }],
                 taskHistory: [], neededTasks: [], shoppingList: [],
                 taskScores: { 'João': 0, 'Gui': 0 },
                 postItNote: 'Clique no pino para adicionar um lembrete...'
@@ -704,7 +932,7 @@
             const tabButtons = document.querySelectorAll('.tab-btn');
             const contasVideo = document.getElementById('contas-video');
             const tarefasVideo = document.getElementById('tarefas-video');
-            
+
             const updateTabUI = (tabName) => {
                 tabButtons.forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.tab === tabName);
@@ -753,68 +981,134 @@
                     openExpenseModal(category, { showDiscount: true });
                 }
             }));
-            document.getElementById('fixed-bills-card').addEventListener('click', () => { 
+            document.getElementById('fixed-bills-card').addEventListener('click', () => {
                 const fixedBillEvents = appState.transactions.filter(tx => Object.keys(billColors).includes(tx.category)).map(tx => ({ day: new Date(tx.date + 'T00:00:00').getDate(), label: tx.category, color: billColors[tx.category] }));
-                generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors); 
-                openModal(fixedBillsModal); 
+                generateCalendar('calendar-container', 'calendar-legend', fixedBillEvents, billColors);
+                openModal(fixedBillsModal);
             });
             document.getElementById('add-task-btn').addEventListener('click', () => openModal(taskModal));
             allModals.forEach(modal => {
                 modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
                 modal.querySelectorAll('.close-modal-btn, .cancel-btn').forEach(btn => btn.addEventListener('click', () => closeModal(modal)));
             });
+
+            // Fechar modal de visualização de imagem
+            const imageViewerModal = document.getElementById('image-viewer-modal');
+            imageViewerModal.addEventListener('click', (e) => {
+                if (e.target === imageViewerModal || e.target.classList.contains('close-modal-btn')) {
+                    imageViewerModal.classList.add('hidden');
+                }
+            });
             document.getElementById('toggle-discount-btn').addEventListener('click', () => {
                 const discountSection = document.getElementById('discount-section');
                 discountSection.classList.toggle('hidden');
                 if (!discountSection.classList.contains('hidden') && document.getElementById('personal-items-list').children.length === 0) addPersonalItemInput();
             });
-            const addPersonalItemInput = (value = '', owner = 'João') => {
+            const addPersonalItemInput = (value = '', owner = 'João', description = '') => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'grid grid-cols-3 gap-2 items-center';
-                itemDiv.innerHTML = `<input type="number" step="0.01" placeholder="Valor" class="personal-item-value col-span-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${value}"><div class="relative col-span-2"><select class="personal-item-owner w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white appearance-none"><option value="João" ${owner === 'João' ? 'selected' : ''}>Item de João</option><option value="Gui" ${owner === 'Gui' ? 'selected' : ''}>Item de Gui</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>`;
+                itemDiv.className = 'space-y-2 p-3 bg-gray-50 rounded-lg';
+                itemDiv.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center"><input type="number" step="0.01" placeholder="Valor" class="personal-item-value col-span-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${value}"><div class="relative col-span-2"><select class="personal-item-owner w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white appearance-none"><option value="João" ${owner === 'João' ? 'selected' : ''}>Item de João</option><option value="Gui" ${owner === 'Gui' ? 'selected' : ''}>Item de Gui</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div></div><input type="text" placeholder="Descrição (opcional): Ex: Shampoo, cerveja..." class="personal-item-description w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${description}">`;
                 document.getElementById('personal-items-list').appendChild(itemDiv);
             };
             document.getElementById('add-item-btn').addEventListener('click', () => addPersonalItemInput());
+
+            // Event listeners para upload de imagem
+            document.getElementById('receipt-image').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedReceiptImage = file;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        document.getElementById('image-preview').src = event.target.result;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('remove-image-btn').addEventListener('click', () => {
+                selectedReceiptImage = null;
+                document.getElementById('receipt-image').value = '';
+                document.getElementById('image-preview-container').classList.add('hidden');
+            });
+
             document.querySelectorAll('.fixed-bill-btn').forEach(btn => btn.addEventListener('click', (e) => { closeModal(fixedBillsModal); openExpenseModal(e.target.dataset.bill, { defaultPayer: 'Gui', showDiscount: false }); }));
-            
-            document.getElementById('expense-form').addEventListener('submit', (e) => {
+
+            document.getElementById('expense-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const totalValue = parseFloat(document.getElementById('total-value').value) || 0;
                 const date = document.getElementById('expense-date').value;
                 if (totalValue <= 0 || !date) return;
-                
+
                 const personalItems = { 'João': 0, 'Gui': 0 };
+                const personalItemsDescriptions = { 'João': '', 'Gui': '' };
                 document.querySelectorAll('#personal-items-list > div').forEach(itemDiv => {
                     const owner = itemDiv.querySelector('.personal-item-owner').value;
                     const value = parseFloat(itemDiv.querySelector('.personal-item-value').value) || 0;
+                    const description = itemDiv.querySelector('.personal-item-description').value || '';
                     personalItems[owner] += value;
+                    if (description) {
+                        personalItemsDescriptions[owner] = personalItemsDescriptions[owner] ? personalItemsDescriptions[owner] + ', ' + description : description;
+                    }
                 });
-                
+
                 const transactionId = document.getElementById('transaction-id').value;
-                // LOG DE DEPURAÇÃO
+                const purchaseDescription = document.getElementById('purchase-description').value;
+
+                // Upload da imagem se houver
+                let receiptImageUrl = '';
+                if (selectedReceiptImage) {
+                    try {
+                        const timestamp = Date.now();
+                        const imageRef = ref(storage, `receiptImages/${timestamp}_${selectedReceiptImage.name}`);
+                        await uploadBytes(imageRef, selectedReceiptImage);
+                        receiptImageUrl = await getDownloadURL(imageRef);
+                        console.log('Imagem enviada com sucesso:', receiptImageUrl);
+                    } catch (error) {
+                        console.error('Erro ao fazer upload da imagem:', error);
+                        alert('Erro ao fazer upload da imagem. A compra será salva sem a foto.');
+                    }
+                }
+
                 console.log('Formulário enviado. ID da transação:', transactionId || 'Nenhum (novo item)');
 
                 if (transactionId) {
                     const updatedTransactions = appState.transactions.map(tx => {
                         if (tx.id === transactionId) {
-                            // LOG DE DEPURAÇÃO
                             console.log('Encontrada transação para atualizar:', tx);
-                            const updatedTx = { ...tx, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItems, date };
+                            const updatedTx = {
+                                ...tx,
+                                payer: document.getElementById('payer').value,
+                                description: purchaseDescription,
+                                totalValue,
+                                personalItems,
+                                personalItemsDescriptions,
+                                date,
+                                receiptImageUrl: receiptImageUrl || tx.receiptImageUrl || ''
+                            };
                             console.log('Dados atualizados:', updatedTx);
                             return updatedTx;
                         }
                         return tx;
                     });
-                    // LOG DE DEPURAÇÃO
                     console.log('Enviando array de transações atualizado para o Firebase:', updatedTransactions);
                     updateDoc(appStateRef, { transactions: updatedTransactions });
                 } else {
-                    const newTransaction = { id: Date.now().toString(), category: currentCategory, payer: document.getElementById('payer').value, name: document.getElementById('purchase-name').value, totalValue, personalItems, date };
-                    // LOG DE DEPURAÇÃO
+                    const newTransaction = {
+                        id: Date.now().toString(),
+                        category: currentCategory,
+                        payer: document.getElementById('payer').value,
+                        description: purchaseDescription,
+                        totalValue,
+                        personalItems,
+                        personalItemsDescriptions,
+                        date,
+                        receiptImageUrl: receiptImageUrl || ''
+                    };
                     console.log('Enviando nova transação para o Firebase:', newTransaction);
                     updateDoc(appStateRef, { transactions: [...appState.transactions, newTransaction] });
                 }
-                
+
                 showAnimation(e.submitter, 'coin-animation', '$');
                 closeModal(expenseModal);
             });
@@ -827,7 +1121,7 @@
                 const level = type === 'Louça' ? null : document.getElementById('task-level').value;
                 const points = type === 'Louça' ? taskPoints.types[type] : taskPoints.levels[level] * taskPoints.types[type];
                 const newTask = { id: Date.now().toString(), doer, type, level, points, date: new Date().toISOString() };
-                const newScores = {...appState.taskScores};
+                const newScores = { ...appState.taskScores };
                 newScores[doer] += points;
                 let newNeeded = appState.neededTasks.filter(t => t !== type);
                 updateDoc(appStateRef, { taskHistory: [...appState.taskHistory, newTask], taskScores: newScores, neededTasks: newNeeded });
@@ -843,10 +1137,10 @@
                 else summaryEl.innerHTML = `João deve pagar <span class="font-bold">R$ ${balanceAmount.toFixed(2)}</span> a Gui.`;
                 openModal(settlementModal);
             });
-            document.getElementById('confirm-settlement-btn').addEventListener('click', (e) => { 
-                resetAccounts(); 
+            document.getElementById('confirm-settlement-btn').addEventListener('click', (e) => {
+                resetAccounts();
                 showAnimation(e.target, 'coin-animation', '$');
-                closeModal(settlementModal); 
+                closeModal(settlementModal);
             });
             document.getElementById('shopping-list-form').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -864,7 +1158,7 @@
                     updateDoc(appStateRef, { shoppingList: newShoppingList });
                 }
             });
-            document.getElementById('clear-shopping-list-btn').addEventListener('click', () => updateDoc(appStateRef, { shoppingList: [] }) );
+            document.getElementById('clear-shopping-list-btn').addEventListener('click', () => updateDoc(appStateRef, { shoppingList: [] }));
 
             const postItText = document.getElementById('post-it-text-display');
             const postItInput = document.getElementById('post-it-text-input');
@@ -905,6 +1199,14 @@
                         updateDoc(appStateRef, { transactions: updatedTransactions });
                     }
                 }
+                // Visualizar nota fiscal
+                const viewReceiptBtn = e.target.closest('.view-receipt-btn');
+                if (viewReceiptBtn) {
+                    const imageUrl = viewReceiptBtn.dataset.image;
+                    const imageViewerModal = document.getElementById('image-viewer-modal');
+                    document.getElementById('viewer-image').src = imageUrl;
+                    imageViewerModal.classList.remove('hidden');
+                }
             });
             document.getElementById('task-history-list').addEventListener('click', (e) => {
                 const deleteBtn = e.target.closest('.delete-task-btn');
@@ -934,7 +1236,7 @@
                     if (appState.taskHistory) {
                         appState.taskHistory = appState.taskHistory.map(t => {
                             const date = t.date && typeof t.date.toDate === 'function' ? t.date.toDate() : new Date(t.date);
-                            return {...t, date };
+                            return { ...t, date };
                         });
                     }
                 } else {
@@ -942,12 +1244,12 @@
                     setDoc(appStateRef, appState);
                     return;
                 }
-                
+
                 const today = new Date();
                 const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
                 document.getElementById('settlement-date-text').textContent = `Próximo acerto dia 15 de ${monthNames[nextMonth.getMonth()]}`;
                 postItText.textContent = appState.postItNote || 'Clique no pino para adicionar um lembrete...';
-                
+
                 updateBalanceUI();
                 updateHistoryUI();
                 updateTaskUI();
@@ -957,4 +1259,5 @@
         });
     </script>
 </body>
+
 </html>
